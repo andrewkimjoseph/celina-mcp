@@ -55,4 +55,29 @@ export class CeloClientFactory {
     this.cache.set(network, clients);
     return clients;
   }
+
+  getClientsForAccount(
+    network: CeloNetwork,
+    privateKey: `0x${string}`,
+  ): CeloClients {
+    const chain = CHAINS[network];
+    const rpcUrl =
+      this.config.rpcUrls[network] ?? DEFAULT_RPC_URLS[network];
+    const transport = http(rpcUrl);
+
+    const publicClient = createPublicClient({ chain, transport });
+    const account = privateKeyToAccount(privateKey);
+
+    const wallet = createWalletClient({
+      account,
+      chain,
+      transport,
+    });
+
+    return {
+      public: publicClient,
+      wallet,
+      accountAddress: account.address,
+    };
+  }
 }
