@@ -10,6 +10,13 @@ import {
 } from "../schemas/common.js";
 import { err, ok } from "./helpers.js";
 
+const encryptedPrivateKeySchema = z
+  .string()
+  .optional()
+  .describe(
+    "RSA-OAEP encrypted private key (base64). Encrypt locally with get_wallet_encryption_public_key.",
+  );
+
 export const transactionTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
     server.registerTool(
@@ -17,16 +24,17 @@ export const transactionTools: ToolModule = {
       {
         title: "Estimate Send",
         description:
-          "Estimates gas for sending CELO or an ERC-20 token. Requires CELO_PRIVATE_KEY.",
+          "Estimates gas for sending CELO or an ERC-20 token. Requires encryptedPrivateKey (hosted) or CELO_PRIVATE_KEY (local).",
         inputSchema: z.object({
           to: addressSchema,
           token: tokenSymbolSchema.default("CELO"),
           amount: z.string().describe("Human-readable amount, e.g. 1.5"),
           network: networkSchema.optional(),
+          encryptedPrivateKey: encryptedPrivateKeySchema,
         }),
         annotations: { readOnlyHint: true },
       },
-      async ({ to, token, amount, network }) => {
+      async ({ to, token, amount, network, encryptedPrivateKey }) => {
         try {
           const resolved = resolveNetwork(network, ctx.config.defaultNetwork);
           return ok(
@@ -35,6 +43,7 @@ export const transactionTools: ToolModule = {
               to as `0x${string}`,
               token,
               amount,
+              encryptedPrivateKey,
             ),
           );
         } catch (error) {
@@ -48,19 +57,20 @@ export const transactionTools: ToolModule = {
       {
         title: "Send Token",
         description:
-          "Send CELO or an ERC-20 token from the configured wallet. Requires CELO_PRIVATE_KEY.",
+          "Send CELO or an ERC-20 token. User must encrypt their private key with the server's public key (get_wallet_encryption_public_key) before calling.",
         inputSchema: z.object({
           to: addressSchema,
           token: tokenSymbolSchema.default("CELO"),
           amount: z.string().describe("Human-readable amount, e.g. 0.01"),
           network: networkSchema.optional(),
+          encryptedPrivateKey: encryptedPrivateKeySchema,
         }),
         annotations: {
           destructiveHint: true,
           openWorldHint: true,
         },
       },
-      async ({ to, token, amount, network }) => {
+      async ({ to, token, amount, network, encryptedPrivateKey }) => {
         try {
           const resolved = resolveNetwork(network, ctx.config.defaultNetwork);
           return ok(
@@ -69,6 +79,7 @@ export const transactionTools: ToolModule = {
               to as `0x${string}`,
               token,
               amount,
+              encryptedPrivateKey,
             ),
           );
         } catch (error) {
