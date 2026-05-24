@@ -99,6 +99,12 @@ Claude Desktop's `claude_desktop_config.json` only supports local stdio servers 
 
 Fully quit and relaunch Claude Desktop after editing the config (closing the window is not enough).
 
+<p align="center">
+  <video src="https://github.com/andrewkimjoseph/celina/raw/main/assets/claude-desktop.mp4" controls width="720">
+    <a href="https://github.com/andrewkimjoseph/celina/raw/main/assets/claude-desktop.mp4">Watch the Claude Desktop setup demo</a>
+  </video>
+</p>
+
 > **Pro / Max / Team / Enterprise:** you can skip `mcp-remote` and add `https://mcp.celina.andrewkimjoseph.com/mcp` under **Settings → Integrations** instead.
 
 ### Local stdio (npm)

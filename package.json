@@ -13,7 +13,7 @@
   "files": [
     "build/",
     "bin/",
-    "assets/",
+    "assets/logo.png",
     "README.md",
     "LICENSE"
   ],
