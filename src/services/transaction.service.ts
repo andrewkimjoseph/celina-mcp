@@ -99,6 +99,11 @@ export class TransactionService {
       );
     }
 
+    const account = wallet.account;
+    if (!account) {
+      throw new Error("Wallet account unavailable.");
+    }
+
     const resolved = this.tokenService.resolveToken(token);
     const chain = client.chain;
     if (!chain) {
@@ -108,7 +113,7 @@ export class TransactionService {
     if (resolved.address === "native") {
       const hash = await wallet.sendTransaction({
         chain,
-        account: from,
+        account,
         to,
         value: parseEther(amount),
       });
@@ -128,7 +133,7 @@ export class TransactionService {
     const tokenAmount = this.tokenService.parseAmount(amount, resolved.decimals);
     const hash = await wallet.writeContract({
       chain,
-      account: from,
+      account,
       address: resolved.address,
       abi: erc20Abi,
       functionName: "transfer",
