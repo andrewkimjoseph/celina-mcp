@@ -1,5 +1,4 @@
 import { encodeFunctionData, erc20Abi, parseEther } from "viem";
-import type { CeloNetwork } from "../config/env.js";
 import type { CeloClientFactory, CeloClients } from "../clients/celo-client.js";
 import { decryptPrivateKey } from "../crypto/wallet-key-crypto.js";
 import { TokenService } from "./token.service.js";
@@ -7,23 +6,17 @@ import { TokenService } from "./token.service.js";
 export class TransactionService {
   private readonly tokenService: TokenService;
 
-  constructor(
-    private readonly clientFactory: CeloClientFactory,
-    private readonly walletAddress?: `0x${string}`,
-  ) {
+  constructor(private readonly clientFactory: CeloClientFactory) {
     this.tokenService = new TokenService(clientFactory);
   }
 
-  private resolveClients(
-    network: CeloNetwork,
-    encryptedPrivateKey?: string,
-  ): CeloClients {
+  private resolveClients(encryptedPrivateKey?: string): CeloClients {
     if (encryptedPrivateKey) {
       const privateKey = decryptPrivateKey(encryptedPrivateKey);
-      return this.clientFactory.getClientsForAccount(network, privateKey);
+      return this.clientFactory.getClientsForAccount(privateKey);
     }
 
-    const clients = this.clientFactory.getClients(network);
+    const clients = this.clientFactory.getClients();
     if (!clients.wallet || !clients.accountAddress) {
       throw new Error(
         "No wallet configured. Provide encryptedPrivateKey (encrypt with get_wallet_encryption_public_key) or set CELO_PRIVATE_KEY for local mode.",
@@ -34,14 +27,12 @@ export class TransactionService {
   }
 
   async estimateSend(
-    network: CeloNetwork,
     to: `0x${string}`,
     token: string,
     amount: string,
     encryptedPrivateKey?: string,
   ) {
     const { public: client, accountAddress: from } = this.resolveClients(
-      network,
       encryptedPrivateKey,
     );
 
@@ -49,7 +40,7 @@ export class TransactionService {
       throw new Error("Wallet address unavailable.");
     }
 
-    const resolved = this.tokenService.resolveToken(network, token);
+    const resolved = this.tokenService.resolveToken(token);
 
     if (resolved.address === "native") {
       const value = parseEther(amount);
@@ -60,7 +51,7 @@ export class TransactionService {
       });
 
       return {
-        network,
+        network: "mainnet",
         from,
         to,
         token: resolved.symbol,
@@ -83,7 +74,7 @@ export class TransactionService {
     });
 
     return {
-      network,
+      network: "mainnet",
       from,
       to,
       token: resolved.symbol,
@@ -93,14 +84,12 @@ export class TransactionService {
   }
 
   async sendToken(
-    network: CeloNetwork,
     to: `0x${string}`,
     token: string,
     amount: string,
     encryptedPrivateKey?: string,
   ) {
     const { public: client, wallet, accountAddress: from } = this.resolveClients(
-      network,
       encryptedPrivateKey,
     );
 
@@ -110,7 +99,7 @@ export class TransactionService {
       );
     }
 
-    const resolved = this.tokenService.resolveToken(network, token);
+    const resolved = this.tokenService.resolveToken(token);
     const chain = client.chain;
     if (!chain) {
       throw new Error("Chain configuration missing");
@@ -126,7 +115,7 @@ export class TransactionService {
 
       const receipt = await client.waitForTransactionReceipt({ hash });
       return {
-        network,
+        network: "mainnet",
         hash,
         status: receipt.status,
         from,
@@ -148,7 +137,7 @@ export class TransactionService {
 
     const receipt = await client.waitForTransactionReceipt({ hash });
     return {
-      network,
+      network: "mainnet",
       hash,
       status: receipt.status,
       from,
@@ -158,17 +147,12 @@ export class TransactionService {
     };
   }
 
-  async getSwapQuote(
-    network: CeloNetwork,
-    fromToken: string,
-    toToken: string,
-    amount: string,
-  ) {
-    const from = this.tokenService.resolveToken(network, fromToken);
-    const to = this.tokenService.resolveToken(network, toToken);
+  async getSwapQuote(fromToken: string, toToken: string, amount: string) {
+    const from = this.tokenService.resolveToken(fromToken);
+    const to = this.tokenService.resolveToken(toToken);
 
     return {
-      network,
+      network: "mainnet",
       status: "not_implemented",
       message:
         "On-chain swap routing (Mento/Uniswap) is not wired yet. Use this tool to validate token pairs before execute_swap ships.",

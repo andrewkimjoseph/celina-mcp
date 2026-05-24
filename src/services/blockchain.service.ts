@@ -1,11 +1,10 @@
-import type { CeloNetwork } from "../config/env.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 
 export class BlockchainService {
   constructor(private readonly clientFactory: CeloClientFactory) {}
 
-  async getNetworkStatus(network: CeloNetwork) {
-    const { public: client } = this.clientFactory.getClients(network);
+  async getNetworkStatus() {
+    const { public: client } = this.clientFactory.getClients();
     const [chainId, blockNumber, gasPrice] = await Promise.all([
       client.getChainId(),
       client.getBlockNumber(),
@@ -13,18 +12,15 @@ export class BlockchainService {
     ]);
 
     return {
-      network,
+      network: "mainnet",
       chainId,
       blockNumber: blockNumber.toString(),
       gasPriceWei: gasPrice.toString(),
     };
   }
 
-  async getBlock(
-    network: CeloNetwork,
-    blockId: number | string | "latest" | "pending",
-  ) {
-    const { public: client } = this.clientFactory.getClients(network);
+  async getBlock(blockId: number | string | "latest" | "pending") {
+    const { public: client } = this.clientFactory.getClients();
     const blockParams =
       typeof blockId === "number"
         ? { blockNumber: BigInt(blockId), includeTransactions: false as const }
@@ -53,8 +49,8 @@ export class BlockchainService {
     };
   }
 
-  async getLatestBlocks(network: CeloNetwork, count = 5) {
-    const { public: client } = this.clientFactory.getClients(network);
+  async getLatestBlocks(count = 5) {
+    const { public: client } = this.clientFactory.getClients();
     const latest = await client.getBlockNumber();
     const start = latest - BigInt(Math.max(count - 1, 0));
 
@@ -72,8 +68,8 @@ export class BlockchainService {
     }));
   }
 
-  async getTransaction(network: CeloNetwork, hash: `0x${string}`) {
-    const { public: client } = this.clientFactory.getClients(network);
+  async getTransaction(hash: `0x${string}`) {
+    const { public: client } = this.clientFactory.getClients();
     const [tx, receipt] = await Promise.all([
       client.getTransaction({ hash }),
       client.getTransactionReceipt({ hash }),
