@@ -8,13 +8,29 @@ import {
 } from "../crypto/wallet-key-crypto.js";
 import { createServer } from "./create-server.js";
 
-const RENDER_EXTERNAL_HOSTNAME = process.env.RENDER_EXTERNAL_HOSTNAME;
+function getAllowedHosts(): string[] | undefined {
+  const hosts = new Set<string>();
+
+  if (process.env.RENDER_EXTERNAL_HOSTNAME) {
+    hosts.add(process.env.RENDER_EXTERNAL_HOSTNAME);
+  }
+
+  const extra = process.env.ALLOWED_HOSTS;
+  if (extra) {
+    for (const host of extra.split(",")) {
+      const trimmed = host.trim();
+      if (trimmed) {
+        hosts.add(trimmed);
+      }
+    }
+  }
+
+  return hosts.size > 0 ? [...hosts] : undefined;
+}
 
 export const app = createMcpExpressApp({
   host: "0.0.0.0",
-  allowedHosts: RENDER_EXTERNAL_HOSTNAME
-    ? [RENDER_EXTERNAL_HOSTNAME]
-    : undefined,
+  allowedHosts: getAllowedHosts(),
 });
 
 const transports = new Map<string, StreamableHTTPServerTransport>();

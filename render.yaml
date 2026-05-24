@@ -14,3 +14,5 @@ services:
         value: "10000"
       - key: WALLET_ENCRYPTION_PRIVATE_KEY
         sync: false
+      - key: ALLOWED_HOSTS
+        value: mcp.celina.andrewkimjoseph.com
