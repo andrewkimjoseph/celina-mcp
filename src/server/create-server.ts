@@ -8,7 +8,7 @@ import { SERVER_INSTRUCTIONS } from "./instructions.js";
 export function createServer(): McpServer {
   const config = loadConfig();
   const clientFactory = new CeloClientFactory(config);
-  const clients = clientFactory.getClients(config.defaultNetwork);
+  const clients = clientFactory.getClients();
 
   const server = new McpServer(
     { name: "celo-mcp", version: "0.1.0" },
@@ -23,11 +23,7 @@ export function createServer(): McpServer {
 
   registerAllTools(
     server,
-    createAppContext(
-      clientFactory,
-      config.defaultNetwork,
-      clients.accountAddress,
-    ),
+    createAppContext(clientFactory, clients.accountAddress),
   );
 
   return server;
