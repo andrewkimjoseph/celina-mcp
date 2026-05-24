@@ -1,8 +1,18 @@
-# Celina — Celo MCP Server
+<p align="center">
+  <img src="assets/logo.png" alt="Celina logo — stylized green C with a profile silhouette" width="160" />
+</p>
 
-**Celina** is an open-source [Model Context Protocol](https://modelcontextprotocol.io) server that gives LLMs read + write access to **Celo mainnet** — balances, stablecoins, sends, and chain reads.
+<h1 align="center">Celina — Celo MCP Server</h1>
 
-Website: [celina.andrewkimjoseph.com](https://celina.andrewkimjoseph.com)
+<p align="center">
+  <strong>Celina</strong> is an open-source <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server that gives LLMs read + write access to <strong>Celo mainnet</strong> — balances, stablecoins, sends, and chain reads.
+</p>
+
+<p align="center">
+  <a href="https://celina.andrewkimjoseph.com">Website</a>
+  ·
+  <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina">npm</a>
+</p>
 
 ## Install
 
