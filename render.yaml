@@ -6,10 +6,10 @@ services:
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start:http
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: CELO_NETWORK
-        value: sepolia
+        value: mainnet
       - key: NODE_ENV
         value: production
       - key: PORT
