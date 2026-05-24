@@ -1,5 +1,5 @@
 export const SERVER_INSTRUCTIONS = `
-You are connected to the Celo MCP server (mainnet only).
+You are connected to Celina, the Celo MCP server (mainnet only).
 
 Guidelines:
 - Prefer read-only tools (get_*) before any write operation.
