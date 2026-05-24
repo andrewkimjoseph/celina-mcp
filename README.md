@@ -106,7 +106,7 @@ Never commit private keys. Use env vars only.
 
 Celina is an **MCP tool server**. A local LLM stack needs an **MCP client** that can connect to Celina and pass tool definitions to a model that supports **function / tool calling**.
 
-Read-only tools (balances, blocks, GoodDollar status, etc.) work out of the box. For local write tools (`send_token`, `estimate_send`), set `CELO_PRIVATE_KEY` in the MCP server `env` block (stdio) or use the [hosted encryption flow](#write-tools-hosted-mode) (HTTP).
+Read-only tools (balances, blocks, GoodDollar status, etc.) work out of the box. For local write tools (`send_token`, `estimate_send`, `execute_mento_fx`), set `CELO_PRIVATE_KEY` in the MCP server `env` block (stdio) or use the [hosted encryption flow](#write-tools-hosted-mode) (HTTP).
 
 ### LM Studio (0.3.17+)
 
@@ -196,7 +196,7 @@ npm run inspect
 
 ## Write tools (hosted mode)
 
-Write tools (`send_token`, `estimate_send`) accept an RSA-encrypted private key per request — never plaintext.
+Write tools (`send_token`, `estimate_send`, `execute_mento_fx`) accept an RSA-encrypted private key per request — never plaintext.
 
 ### Flow
 
@@ -257,6 +257,9 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `get_wallet_encryption_public_key` | read | RSA public key for encrypting private keys |
 | `estimate_send` | read* | Gas estimate (*needs encrypted or env key) |
 | `send_token` | write | Send CELO or ERC-20 |
+| `get_mento_fx_quote` | read | Mento FX expected output (no wallet) |
+| `estimate_mento_fx` | read* | Mento FX gas estimate (*needs encrypted or env key) |
+| `execute_mento_fx` | write | Execute Mento FX conversion |
 
 ## Adding a new tool
 
@@ -282,7 +285,7 @@ No changes to `src/index.ts` or server bootstrap required.
 
 ## Roadmap
 
-- [ ] Mento / DEX swap routing (`execute_swap`)
+- [x] Mento FX routing (`get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx`)
 - [ ] Aave lending tools
 - [ ] Self proof verification (`ai.self.xyz`)
 - [ ] Self Agent ID check

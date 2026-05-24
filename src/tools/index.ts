@@ -5,6 +5,7 @@ import { accountTools, blockchainTools } from "./blockchain.tools.js";
 import { gooddollarTools } from "./gooddollar.tools.js";
 import { tokenTools } from "./token.tools.js";
 import { transactionTools } from "./transaction.tools.js";
+import { mentoFxTools } from "./mento-fx.tools.js";
 import { walletTools } from "./wallet.tools.js";
 
 export const toolModules: ToolModule[] = [
@@ -13,6 +14,7 @@ export const toolModules: ToolModule[] = [
   tokenTools,
   walletTools,
   transactionTools,
+  mentoFxTools,
   gooddollarTools,
 ];
 

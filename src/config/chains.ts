@@ -4,6 +4,10 @@ export const CHAIN = celo;
 
 export const DEFAULT_RPC_URL = "https://forno.celo.org";
 
+/** Mento collateral address for native CELO (used by @mento-protocol/mento-sdk). */
+export const MENTO_CELO_ADDRESS =
+  "0x471EcE3750Da237f93B8E339c536989b8978a438" as const;
+
 export type KnownToken = {
   symbol: string;
   address: `0x${string}` | "native";
@@ -252,6 +256,15 @@ export function findKnownToken(token: string): KnownToken | undefined {
       tokenMatchesInput(entry, normalized, upper) ||
       (upper === "NATIVE" && entry.address === "native"),
   );
+}
+
+export function toMentoTokenAddress(
+  address: `0x${string}` | "native",
+): `0x${string}` {
+  if (address === "native") {
+    return MENTO_CELO_ADDRESS;
+  }
+  return address;
 }
 
 export function resolveStablecoins(symbols?: string[]): Stablecoin[] {
