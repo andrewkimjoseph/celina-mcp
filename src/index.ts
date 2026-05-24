@@ -7,7 +7,9 @@ async function main(): Promise<void> {
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Celina running on stdio");
+  if (process.env.CELINA_DEBUG === "1") {
+    console.error("Celina running on stdio");
+  }
 }
 
 main().catch((error) => {
