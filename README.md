@@ -61,7 +61,7 @@ openssl rsa -pubout -in private.pem -out public.pem
 
 ## Cursor / Claude Desktop config
 
-### Remote (recommended)
+### Cursor — remote (recommended)
 
 ```json
 {
@@ -75,6 +75,31 @@ openssl rsa -pubout -in private.pem -out public.pem
 ```
 
 > Custom domains must be listed in `ALLOWED_HOSTS` on the server. Render's default hostname (`RENDER_EXTERNAL_HOSTNAME`) is always allowed automatically.
+
+### Claude Desktop — remote (free plan)
+
+Claude Desktop's `claude_desktop_config.json` only supports local stdio servers — it does **not** accept `"type": "streamable-http"` with a `"url"`. Free-plan users should bridge the hosted server with [`mcp-remote`](https://github.com/geelen/mcp-remote):
+
+```json
+{
+  "mcpServers": {
+    "celina": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.celina.andrewkimjoseph.com/mcp",
+        "--transport",
+        "http-only"
+      ]
+    }
+  }
+}
+```
+
+Fully quit and relaunch Claude Desktop after editing the config (closing the window is not enough).
+
+> **Pro / Max / Team / Enterprise:** you can skip `mcp-remote` and add `https://mcp.celina.andrewkimjoseph.com/mcp` under **Settings → Integrations** instead.
 
 ### Local stdio (npm)
 
