@@ -55,7 +55,7 @@ openssl rsa -pubout -in private.pem -out public.pem
 2. Render Dashboard → **New → Blueprint** → connect the repo
 3. Set `WALLET_ENCRYPTION_PRIVATE_KEY` in the Render Environment tab (paste contents of `private.pem`)
 4. (Optional) Add a custom domain in Render and set `ALLOWED_HOSTS` to that hostname (comma-separated if multiple)
-5. Your MCP endpoint will be at `https://mcp.celina.andrewkimjoseph.com/mcp` (or your Render URL + `/mcp`)
+5. Your MCP endpoint will be at your Render URL + `/mcp`
 
 > **Note:** Free Render services spin down after ~15 minutes of inactivity. Cold starts can take 30–60 seconds and may cause MCP client timeouts. Use a Starter plan for always-on hosting.
 
