@@ -145,6 +145,13 @@ export const KNOWN_TOKENS: KnownToken[] = [
     decimals: 6,
   },
   {
+    symbol: "WETH",
+    address: "0xD221812de1BD094f35587EE8E174B07B6167D9Af",
+    issuer: "Wrapped Ether",
+    useCase: "Bridged ETH on Celo",
+    decimals: 18,
+  },
+  {
     symbol: "vEUR",
     address: "0x9346f43c1588b6df1d52bdd6bf846064f92d9cba",
     issuer: "VNX",
