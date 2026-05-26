@@ -175,7 +175,7 @@ npm run inspect
 
 ## Write tools
 
-Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `supply_aave_usdt`, `withdraw_aave_usdt`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
+Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `supply_aave`, `withdraw_aave`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
 
 ## Environment variables
 
@@ -221,8 +221,8 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `get_mento_fx_quote` | read | Mento FX expected output (no wallet) |
 | `estimate_mento_fx` | read* | Mento FX gas estimate (*needs `CELO_PRIVATE_KEY`) |
 | `execute_mento_fx` | write | Execute Mento FX conversion |
-| `supply_aave_usdt` | write | Supply USDT to Aave V3 on Celo |
-| `withdraw_aave_usdt` | write | Withdraw USDT from Aave V3 on Celo |
+| `supply_aave` | write | Supply tokens to Aave V3 on Celo (USDT, WETH, USDm, USDC, CELO, EURm) |
+| `withdraw_aave` | write | Withdraw tokens from Aave V3 on Celo |
 | `get_gooddollar_whitelisting_info` | read | GoodDollar IdentityV4 whitelist status |
 | `verify_self_agent` | read | Verify Self Agent ID on-chain by address |
 | `lookup_self_agent` | read | Look up Self agent by numeric ID (ai.self.xyz) |
@@ -276,7 +276,7 @@ No changes to `src/index.ts` or server bootstrap required.
 ## Roadmap
 
 - [x] Mento FX routing (`get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx`)
-- [x] Aave lending tools (`supply_aave_usdt`, `withdraw_aave_usdt`)
+- [x] Aave lending tools (`supply_aave`, `withdraw_aave`) — USDT, WETH, USDm, USDC, CELO, EURm
 - [x] Self proof verification (`verify_self_agent`, `verify_self_request`, `ai.self.xyz`)
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
 
