@@ -15,13 +15,13 @@
 <p align="center">
   <a href="https://celina.andrewkimjoseph.com">Website</a>
   ·
-  <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina">npm</a>
+  <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp">npm</a>
 </p>
 
 ## Install
 
 ```bash
-npm i @andrewkimjoseph/celina@latest
+npm i @andrewkimjoseph/celina-mcp@latest
 ```
 
 ## Quick start
