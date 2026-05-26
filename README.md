@@ -71,10 +71,10 @@ Use the same stdio config in `claude_desktop_config.json` (macOS: `~/Library/App
 ```json
 {
   "mcpServers": {
-    "celina": {
+    "celina-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@andrewkimjoseph/celina"],
+      "args": ["-y", "@andrewkimjoseph/celina-mcp"],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
         "SELF_AGENT_PRIVATE_KEY": "0x..."
