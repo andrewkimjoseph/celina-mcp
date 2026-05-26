@@ -152,12 +152,12 @@ name: Celina
 version: 0.0.1
 schema: v1
 mcpServers:
-  - name: celina
+  - name: celina-mcp
     type: stdio
     command: npx
     args:
       - "-y"
-      - "@andrewkimjoseph/celina"
+      - "@andrewkimjoseph/celina-mcp"
 ```
 
 Alternatively, copy the [local stdio JSON](#local-stdio-recommended) into `.continue/mcpServers/mcp.json` — Continue picks up Claude/Cursor-style configs automatically.
