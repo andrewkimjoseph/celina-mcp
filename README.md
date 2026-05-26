@@ -21,7 +21,7 @@
 ## Install
 
 ```bash
-npm i @andrewkimjoseph/celina
+npm i @andrewkimjoseph/celina@latest
 ```
 
 npm: [@andrewkimjoseph/celina](https://www.npmjs.com/package/@andrewkimjoseph/celina)
@@ -30,19 +30,7 @@ npm: [@andrewkimjoseph/celina](https://www.npmjs.com/package/@andrewkimjoseph/ce
 
 Celina is not meant to be run manually in a terminal for normal use. Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) spawns it as a child process and talks to it over stdio.
 
-**Recommended:** install from npm, then add Celina to your MCP config (see [MCP setup](#mcp-setup)).
-
-```bash
-npm i @andrewkimjoseph/celina
-```
-
-**From source** (development):
-
-```bash
-npm install
-npm run build
-npm start
-```
+Install from npm, then add Celina to your MCP config — see [MCP setup](#mcp-setup).
 
 ## MCP setup
 
@@ -50,19 +38,19 @@ Pick your client, install the package, paste the config, restart. Celina shows u
 
 ### Local stdio (recommended)
 
-Install the package, then point your MCP client at the built entry. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Requires Node.js ≥ 20.
+Install the package, then add Celina to your MCP config. Your client spawns `npx` and talks to Celina over stdio. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Requires Node.js ≥ 20.
 
-1. Run `npm i @andrewkimjoseph/celina`
+1. Run `npm i @andrewkimjoseph/celina` (optional but recommended — caches the package locally for faster MCP startup)
 2. Open your MCP config (e.g. `claude_desktop_config.json`, Cursor **Settings → MCP**) and merge the snippet below into `mcpServers`
-3. Replace the path with your absolute path to `node_modules/@andrewkimjoseph/celina/build/index.js`, then restart the client
+3. Restart the client
 
 ```json
 {
   "mcpServers": {
     "celina": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/node_modules/@andrewkimjoseph/celina/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@andrewkimjoseph/celina"],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
         "SELF_AGENT_PRIVATE_KEY": "0x..."
@@ -74,45 +62,27 @@ Install the package, then point your MCP client at the built entry. Works in any
 
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
-### Cursor — remote (streamable HTTP)
+### Claude Desktop
 
-No local install — paste and go. Write tools use the [hosted encryption flow](#write-tools-hosted-mode) (no plaintext keys in config).
-
-```json
-{
-  "mcpServers": {
-    "celina": {
-      "type": "streamable-http",
-      "url": "https://mcp.celina.andrewkimjoseph.com/mcp"
-    }
-  }
-}
-```
-
-> Custom domains must be listed in `ALLOWED_HOSTS` on the server. Render's default hostname (`RENDER_EXTERNAL_HOSTNAME`) is always allowed automatically.
-
-### Claude Desktop — remote (free plan)
-
-Claude Desktop's `claude_desktop_config.json` only supports local stdio servers — it does **not** accept `"type": "streamable-http"` with a `"url"`. Free-plan users should bridge the hosted server with [`mcp-remote`](https://github.com/geelen/mcp-remote). Install it once (`npm i -g mcp-remote`), then:
+Use the same stdio config in `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`). Requires Node.js ≥ 20.
 
 ```json
 {
   "mcpServers": {
     "celina": {
-      "command": "mcp-remote",
-      "args": [
-        "https://mcp.celina.andrewkimjoseph.com/mcp",
-        "--transport",
-        "http-only"
-      ]
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@andrewkimjoseph/celina"],
+      "env": {
+        "CELO_PRIVATE_KEY": "0x...",
+        "SELF_AGENT_PRIVATE_KEY": "0x..."
+      }
     }
   }
 }
 ```
 
 Fully quit and relaunch Claude Desktop after editing the config (closing the window is not enough).
-
-> **Pro / Max / Team / Enterprise:** you can skip `mcp-remote` and add `https://mcp.celina.andrewkimjoseph.com/mcp` under **Settings → Integrations** instead.
 
 ### Local stdio (from source)
 
@@ -134,32 +104,11 @@ For development from a cloned repo, point at your local `build/index.js`:
 }
 ```
 
-## Deploy to Render
-
-This project includes a [Render Blueprint](render.yaml) for one-click deployment as a public Streamable HTTP MCP server.
-
-### 1. Generate an RSA key pair
-
-```bash
-openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
-openssl rsa -pubout -in private.pem -out public.pem
-```
-
-### 2. Deploy
-
-1. Push this repo to GitHub
-2. Render Dashboard → **New → Blueprint** → connect the repo
-3. Set `WALLET_ENCRYPTION_PRIVATE_KEY` in the Render Environment tab (paste contents of `private.pem`)
-4. (Optional) Add a custom domain in Render and set `ALLOWED_HOSTS` to that hostname (comma-separated if multiple)
-5. Your MCP endpoint will be at your Render URL + `/mcp`
-
-> **Note:** Free Render services spin down after ~15 minutes of inactivity. Cold starts can take 30–60 seconds and may cause MCP client timeouts. Use a Starter plan for always-on hosting.
-
 ## Local LLM integration
 
 Celina is an **MCP tool server**. A local LLM stack needs an **MCP client** that can connect to Celina and pass tool definitions to a model that supports **function / tool calling**.
 
-Read-only tools (balances, blocks, GoodDollar status, etc.) work out of the box. For local write tools (`send_token`, `estimate_send`, `execute_mento_fx`), set `CELO_PRIVATE_KEY` in the MCP server `env` block (stdio) or use the [hosted encryption flow](#write-tools-hosted-mode) (HTTP).
+Read-only tools (balances, blocks, GoodDollar status, etc.) work out of the box. For write tools (`send_token`, `estimate_send`, `execute_mento_fx`, Aave supply/withdraw), set `CELO_PRIVATE_KEY` in the MCP server `env` block.
 
 ### LM Studio (0.3.17+)
 
@@ -170,46 +119,7 @@ LM Studio can host MCP servers directly via `mcp.json`. After `npm i @andrewkimj
 3. In **Server Settings**, enable **Allow calling servers from mcp.json**
 4. Chat with a tool-capable model (e.g. Qwen 2.5, Llama 3.1+)
 
-```json
-{
-  "mcpServers": {
-    "celina": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/node_modules/@andrewkimjoseph/celina/build/index.js"],
-      "env": {
-        "CELO_PRIVATE_KEY": "0x...",
-        "SELF_AGENT_PRIVATE_KEY": "0x..."
-      }
-    }
-  }
-}
-```
-
 Omit both env vars for read-only chain queries.
-
-### Open WebUI + Ollama
-
-[Open WebUI](https://docs.openwebui.com/features/extensibility/mcp/) supports **streamable HTTP** MCP natively (not stdio).
-
-**Hosted Celina (easiest):** Admin Settings → External Tools → **Add Server** → Type: **MCP (Streamable HTTP)** → URL:
-
-```
-https://mcp.celina.andrewkimjoseph.com/mcp
-```
-
-**Local HTTP server:** run Celina in HTTP mode, then point Open WebUI at it:
-
-```bash
-npm run build
-npm run start:http
-```
-
-Add an External Tool with Type **MCP (Streamable HTTP)** and URL `http://localhost:10000/mcp`.
-
-For write tools over HTTP, set `WALLET_ENCRYPTION_PRIVATE_KEY` in `.env` (see [Deploy to Render](#deploy-to-render)) and use the [encrypt-key flow](#write-tools-hosted-mode).
-
-> If Open WebUI runs in Docker, use `http://host.docker.internal:10000/mcp` instead of `localhost`.
 
 ### Continue (VS Code)
 
@@ -249,37 +159,18 @@ npm run inspect
 - Start with read-only prompts, e.g. *"What's the USDm balance of 0x…?"* or *"Is this wallet GoodDollar whitelisted?"*
 - Keep private keys in env vars only — never commit them to config files in git.
 
-## Write tools (hosted mode)
+## Write tools
 
-Write tools (`send_token`, `estimate_send`, `execute_mento_fx`) accept an RSA-encrypted private key per request — never plaintext.
-
-### Flow
-
-1. Fetch the server's public key:
-   - MCP tool: `get_wallet_encryption_public_key`
-   - HTTP: `GET https://mcp.celina.andrewkimjoseph.com/public-key`
-2. Encrypt your key locally:
-
-```bash
-npm run encrypt-key -- --url https://mcp.celina.andrewkimjoseph.com --key 0xYOUR_PRIVATE_KEY
-```
-
-3. Give the agent the encrypted blob (base64 output) along with your transaction details
-4. The agent calls `send_token` with the `encryptedPrivateKey` parameter
-
-The server decrypts the key ephemerally to sign the transaction — it is not stored.
+Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `supply_aave_usdt`, `withdraw_aave_usdt`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
 
 ## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CELO_RPC_URL_MAINNET` | Forno public RPC | Override mainnet RPC |
-| `CELO_PRIVATE_KEY` | — | Local stdio write tools only |
+| `CELO_PRIVATE_KEY` | — | Write tools (send, Mento FX, Aave) |
 | `SELF_AGENT_PRIVATE_KEY` | — | Self Agent ID signing/identity tools (separate from CELO wallet) |
 | `SELF_AGENT_API_BASE` | `https://app.ai.self.xyz` | Override Self Agent ID REST API base URL |
-| `WALLET_ENCRYPTION_PRIVATE_KEY` | — | RSA private key PEM for HTTP write tools |
-| `ALLOWED_HOSTS` | — | Comma-separated custom hostnames (e.g. `mcp.celina.andrewkimjoseph.com`) |
-| `PORT` | `10000` | HTTP server port (set by Render) |
+| `CELO_RPC_URL_MAINNET` | Forno public RPC | Override mainnet RPC |
 
 Copy `.env.example` to `.env` for local development.
 
@@ -311,11 +202,11 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `get_celo_balances` | read | CELO + ERC-20 balances (default: CELO + USDm) |
 | `get_stablecoin_balances` | read | All registry stablecoins including GoodDollar |
 | `get_token_info` | read | Token metadata |
-| `get_wallet_encryption_public_key` | read | RSA public key for encrypting private keys |
-| `estimate_send` | read* | Gas estimate (*needs encrypted or env key) |
+| `get_wallet_encryption_public_key` | read | RSA public key (HTTP/self-hosted mode only) |
+| `estimate_send` | read* | Gas estimate (*needs `CELO_PRIVATE_KEY`) |
 | `send_token` | write | Send CELO or ERC-20 |
 | `get_mento_fx_quote` | read | Mento FX expected output (no wallet) |
-| `estimate_mento_fx` | read* | Mento FX gas estimate (*needs encrypted or env key) |
+| `estimate_mento_fx` | read* | Mento FX gas estimate (*needs `CELO_PRIVATE_KEY`) |
 | `execute_mento_fx` | write | Execute Mento FX conversion |
 | `supply_aave_usdt` | write | Supply USDT to Aave V3 on Celo |
 | `withdraw_aave_usdt` | write | Withdraw USDT from Aave V3 on Celo |
@@ -381,8 +272,6 @@ No changes to `src/index.ts` or server bootstrap required.
 ```bash
 npm run dev          # watch TypeScript
 npm run inspect      # MCP Inspector UI (stdio)
-npm run start:http   # HTTP server on PORT (default 10000)
-npm run encrypt-key  # encrypt a private key for write tools
 ```
 
 ## License
