@@ -143,7 +143,7 @@ Omit `CELO_PRIVATE_KEY` for read-only.
 
 Agent mode in your editor. Drop a YAML file into your workspace and Continue picks it up in agent mode.
 
-1. Create `.continue/mcpServers/celina.yaml`
+1. Create `.continue/mcpServers/celina-mcp.yaml`
 2. Paste the snippet below
 3. Switch Continue to agent mode and prompt
 
