@@ -8,7 +8,7 @@ const encryptedPrivateKeySchema = z
   .string()
   .optional()
   .describe(
-    "RSA-OAEP encrypted private key (base64). Encrypt locally with get_wallet_encryption_public_key.",
+    "Optional RSA-OAEP encrypted private key (base64) for self-hosted HTTP mode. Prefer CELO_PRIVATE_KEY in MCP env.",
   );
 
 export const aaveTools: ToolModule = {
@@ -18,7 +18,7 @@ export const aaveTools: ToolModule = {
       {
         title: "Supply Aave USDT",
         description:
-          "Supply (lend) USDT to Aave V3 on Celo mainnet. Deposits USDT and receives aUSDT interest-bearing tokens. Sends ERC-20 approval first if needed. User must encrypt their private key with the server's public key (get_wallet_encryption_public_key) before calling.",
+          "Supply (lend) USDT to Aave V3 on Celo mainnet. Deposits USDT and receives aUSDT interest-bearing tokens. Sends ERC-20 approval first if needed. Requires CELO_PRIVATE_KEY in MCP server env.",
         inputSchema: z.object({
           amount: z.string().describe("Human-readable USDT amount, e.g. 100"),
           encryptedPrivateKey: encryptedPrivateKeySchema,
@@ -42,7 +42,7 @@ export const aaveTools: ToolModule = {
       {
         title: "Withdraw Aave USDT",
         description:
-          "Withdraw USDT from Aave V3 on Celo mainnet by redeeming aUSDT. User must encrypt their private key with the server's public key (get_wallet_encryption_public_key) before calling.",
+          "Withdraw USDT from Aave V3 on Celo mainnet by redeeming aUSDT. Requires CELO_PRIVATE_KEY in MCP server env.",
         inputSchema: z.object({
           amount: z
             .string()
