@@ -42,17 +42,17 @@ Pick your client, install the package, paste the config, restart. Celina shows u
 
 Install the package, then add Celina to your MCP config. Your client spawns `npx` and talks to Celina over stdio. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Requires Node.js ≥ 20.
 
-1. Run `npm i @andrewkimjoseph/celina` (optional but recommended — caches the package locally for faster MCP startup)
+1. Run `npm i @andrewkimjoseph/celina-mcp` (optional but recommended — caches the package locally for faster MCP startup)
 2. Open your MCP config (e.g. `claude_desktop_config.json`, Cursor **Settings → MCP**) and merge the snippet below into `mcpServers`
 3. Restart the client
 
 ```json
 {
   "mcpServers": {
-    "celina": {
+    "celina-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@andrewkimjoseph/celina"],
+      "args": ["-y", "@andrewkimjoseph/celina-mcp"],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
         "SELF_AGENT_PRIVATE_KEY": "0x..."
