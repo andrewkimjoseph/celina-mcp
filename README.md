@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/andrewkimjoseph/celina/main/assets/logo-yellow.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/andrewkimjoseph/celina/main/assets/logo-black.png">
-    <img src="https://raw.githubusercontent.com/andrewkimjoseph/celina/main/assets/logo-black.png" alt="Celina logo — C with profile silhouette" width="160">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/logo-yellow.png">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/logo-black.png">
+    <img src="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/logo-black.png" alt="Celina logo — C with profile silhouette" width="160">
   </picture>
 </p>
 
