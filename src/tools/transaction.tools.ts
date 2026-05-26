@@ -9,7 +9,7 @@ const encryptedPrivateKeySchema = z
   .string()
   .optional()
   .describe(
-    "RSA-OAEP encrypted private key (base64). Encrypt locally with get_wallet_encryption_public_key.",
+    "Optional RSA-OAEP encrypted private key (base64) for self-hosted HTTP mode. Prefer CELO_PRIVATE_KEY in MCP env.",
   );
 
 export const transactionTools: ToolModule = {
@@ -19,7 +19,7 @@ export const transactionTools: ToolModule = {
       {
         title: "Estimate Send",
         description:
-          "Estimates gas for sending CELO or an ERC-20 token on mainnet. Accepts a 0x address or ENS name as recipient. Requires encryptedPrivateKey (hosted) or CELO_PRIVATE_KEY (local).",
+          "Estimates gas for sending CELO or an ERC-20 token on mainnet. Accepts a 0x address or ENS name as recipient. Requires CELO_PRIVATE_KEY in MCP server env.",
         inputSchema: z.object({
           to: addressOrEnsSchema,
           token: tokenSymbolSchema.default("CELO"),
@@ -49,7 +49,7 @@ export const transactionTools: ToolModule = {
       {
         title: "Send Token",
         description:
-          "Send CELO or an ERC-20 token on mainnet. Accepts a 0x address or ENS name as recipient. User must encrypt their private key with the server's public key (get_wallet_encryption_public_key) before calling.",
+          "Send CELO or an ERC-20 token on mainnet. Accepts a 0x address or ENS name as recipient. Requires CELO_PRIVATE_KEY in MCP server env.",
         inputSchema: z.object({
           to: addressOrEnsSchema,
           token: tokenSymbolSchema.default("CELO"),
