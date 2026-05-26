@@ -24,6 +24,10 @@
 npm i @andrewkimjoseph/celina-mcp@latest
 ```
 
+## Migration
+
+If you still use `@andrewkimjoseph/celina`, update your MCP config `args` to `@andrewkimjoseph/celina-mcp` and rename the server key to `celina-mcp`. The old package name remains published as a wrapper through one release cycle.
+
 ## Quick start
 
 Celina is not meant to be run manually in a terminal for normal use. Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) spawns it as a child process and talks to it over stdio.
