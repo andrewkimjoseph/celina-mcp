@@ -34,12 +34,15 @@ export const blockchainTools: ToolModule = {
         description: "Fetch a Celo mainnet block by number, hash, or latest.",
         inputSchema: z.object({
           blockId: blockIdSchema,
+          includeTransactions: z.boolean().optional(),
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
-      async ({ blockId }) => {
+      async ({ blockId, includeTransactions }) => {
         try {
-          return ok(await ctx.blockchain.getBlock(blockId));
+          return ok(
+            await ctx.blockchain.getBlock(blockId, { includeTransactions }),
+          );
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
@@ -52,13 +55,14 @@ export const blockchainTools: ToolModule = {
         title: "Get Latest Blocks",
         description: "Fetch the most recent blocks on Celo mainnet.",
         inputSchema: z.object({
-          count: z.number().int().min(1).max(20).default(5),
+          count: z.number().int().min(1).max(100).default(5),
+          offset: z.number().int().min(0).default(0).optional(),
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
-      async ({ count }) => {
+      async ({ count, offset }) => {
         try {
-          return ok(await ctx.blockchain.getLatestBlocks(count));
+          return ok(await ctx.blockchain.getLatestBlocks(count, offset ?? 0));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
