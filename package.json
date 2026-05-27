@@ -1,6 +1,6 @@
 {
   "name": "@andrewkimjoseph/celina-mcp",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Celina — MCP server for Celo mainnet. Balances, transfers, Self Agent ID, and chain reads for LLM agents.",
   "type": "module",
   "main": "build/index.js",
@@ -23,6 +23,9 @@
     "build": "rm -rf build && tsc",
     "start": "node build/index.js",
     "dev": "tsc --watch",
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
     "prepare": "npm run build",
     "inspect": "npx @modelcontextprotocol/inspector node build/index.js"
   },
@@ -50,7 +53,7 @@
   },
   "homepage": "https://github.com/andrewkimjoseph/celina-mcp#readme",
   "dependencies": {
-    "@andrewkimjoseph/celina-sdk": "^0.1.0",
+    "@andrewkimjoseph/celina-sdk": "file:../celina-sdk",
     "@mento-protocol/mento-sdk": "^3.2.8",
     "@modelcontextprotocol/sdk": "^1.22.0",
     "@noble/ed25519": "^3.1.0",
@@ -60,6 +63,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
   }
 }
