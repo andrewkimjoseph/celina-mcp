@@ -28,3 +28,25 @@ export const ensNameSchema = z
   .string()
   .min(3)
   .describe("ENS name, e.g. celina.eth or vitalik.eth");
+
+export const tokenIdSchema = z
+  .string()
+  .describe("NFT token ID (decimal string)");
+
+export const abiSchema = z
+  .array(z.record(z.unknown()))
+  .min(1)
+  .describe("Contract ABI as a JSON array");
+
+export const paginationSchema = {
+  page: z.number().int().min(1).optional(),
+  pageSize: z.number().int().min(1).optional(),
+  offset: z.number().int().min(0).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+} as const;
+
+export const hexDataSchema = z
+  .string()
+  .regex(/^0x[a-fA-F0-9]*$/)
+  .optional()
+  .describe("Optional transaction calldata (hex)");
