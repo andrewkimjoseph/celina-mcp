@@ -3,6 +3,7 @@ import {
   findKnownToken,
   KNOWN_TOKEN_SYMBOLS,
   resolveStablecoins,
+  suggestKnownTokens,
 } from "../config/chains.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 
@@ -18,6 +19,13 @@ export class TokenService {
   resolveToken(token: string): ResolvedToken {
     const known = findKnownToken(token.trim());
     if (!known) {
+      const suggestions = suggestKnownTokens(token);
+      if (suggestions.length > 0) {
+        throw new Error(
+          `Unknown token "${token}" on Celo mainnet. Did you mean ${suggestions.map((entry) => entry.symbol).join(", ")}?`,
+        );
+      }
+
       throw new Error(
         `Unknown token "${token}" on Celo mainnet. Use ${KNOWN_TOKEN_SYMBOLS.join(", ")}.`,
       );

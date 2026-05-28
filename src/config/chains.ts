@@ -216,7 +216,7 @@ export const KNOWN_TOKENS: KnownToken[] = [
   },
   {
     symbol: "GoodDollar",
-    aliases: ["G$"],
+    aliases: ["G$", "GD"],
     address: "0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A",
     issuer: "GoodDollar",
     useCase: "UBI-focused stablecoin for financial inclusion",
@@ -254,7 +254,11 @@ function tokenMatchesInput(token: KnownToken, normalized: string, upper: string)
   );
 }
 
-export function findKnownToken(token: string): KnownToken | undefined {
+function alphanumericKey(value: string): string {
+  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+function findKnownTokenExact(token: string): KnownToken | undefined {
   const normalized = token.trim();
   const upper = normalized.toUpperCase();
   const lower = normalized.toLowerCase();
@@ -265,6 +269,57 @@ export function findKnownToken(token: string): KnownToken | undefined {
       (upper === "NATIVE" && entry.address === "native") ||
       (entry.address !== "native" && entry.address.toLowerCase() === lower),
   );
+}
+
+/** Fuzzy registry lookup for mistyped symbols (e.g. GD for G$/GoodDollar). */
+export function suggestKnownTokens(token: string): KnownToken[] {
+  const normalized = token.trim();
+  const upper = normalized.toUpperCase();
+  const key = alphanumericKey(normalized);
+  if (!key) {
+    return [];
+  }
+
+  const matches = new Map<string, KnownToken>();
+
+  for (const entry of KNOWN_TOKENS) {
+    if (tokenMatchesInput(entry, normalized, upper)) {
+      matches.set(entry.symbol, entry);
+      continue;
+    }
+
+    const symbolKey = alphanumericKey(entry.symbol);
+    if (
+      symbolKey === key ||
+      (key.length >= 2 &&
+        (symbolKey.startsWith(key) || key.startsWith(symbolKey)))
+    ) {
+      matches.set(entry.symbol, entry);
+    }
+
+    for (const alias of entry.aliases ?? []) {
+      const aliasKey = alphanumericKey(alias);
+      if (
+        aliasKey === key ||
+        (key.length >= 2 &&
+          (aliasKey.startsWith(key) || key.startsWith(aliasKey)))
+      ) {
+        matches.set(entry.symbol, entry);
+      }
+    }
+  }
+
+  return [...matches.values()];
+}
+
+export function findKnownToken(token: string): KnownToken | undefined {
+  const exact = findKnownTokenExact(token);
+  if (exact) {
+    return exact;
+  }
+
+  const suggestions = suggestKnownTokens(token);
+  return suggestions.length === 1 ? suggestions[0] : undefined;
 }
 
 export function toMentoTokenAddress(
