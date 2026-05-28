@@ -22,7 +22,7 @@ export const blockIdSchema = z
 
 export const tokenSymbolSchema = z
   .string()
-  .describe("Token symbol (e.g. CELO, USDm, G$, GoodDollar) or 0x contract address");
+  .describe("Celo mainnet token symbol (e.g. CELO, USDm, USDC, USDT)");
 
 export const ensNameSchema = z
   .string()

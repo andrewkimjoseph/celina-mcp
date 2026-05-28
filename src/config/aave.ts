@@ -1,5 +1,6 @@
-import { isAddress } from "viem";
 import { findKnownToken } from "./chains.js";
+
+const HEX_ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
 
 /** Aave V3 on Celo mainnet — from bgd-labs/aave-address-book AaveV3Celo */
 export const AAVE_POOL = "0x3E59A31363E2ad014dcbc521c4a0d5757d9f3402" as const;
@@ -64,10 +65,12 @@ export function resolveAaveAsset(token: string): AaveAsset {
     }
   }
 
-  if (isAddress(normalized)) {
+  if (HEX_ADDRESS_RE.test(normalized)) {
     const lower = normalized.toLowerCase();
     const byAddress = Object.values(AAVE_ASSETS).find(
-      (asset) => asset.underlying.toLowerCase() === lower,
+      (asset) =>
+        asset.underlying.toLowerCase() === lower ||
+        asset.aToken.toLowerCase() === lower,
     );
     if (byAddress) {
       return byAddress;

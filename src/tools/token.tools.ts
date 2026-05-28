@@ -72,7 +72,8 @@ export const tokenTools: ToolModule = {
       "get_token_info",
       {
         title: "Get Token Info",
-        description: "Returns metadata for a known or custom ERC-20 token on mainnet.",
+        description:
+          "Returns metadata for a Celo mainnet registry token.",
         inputSchema: z.object({
           token: tokenSymbolSchema,
         }),
@@ -92,18 +93,18 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Token Balance",
         description:
-          "Returns ERC-20 balance for a specific token contract address on mainnet.",
+          "Returns balance for a Celo mainnet registry token. Pass a symbol (USDC, USDT, USDm, …).",
         inputSchema: z.object({
-          tokenAddress: addressSchema,
+          token: tokenSymbolSchema,
           address: addressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
-      async ({ tokenAddress, address }) => {
+      async ({ token, address }) => {
         try {
           return ok(
             await ctx.token.getTokenBalance(
-              tokenAddress as `0x${string}`,
+              token,
               address as `0x${string}`,
             ),
           );
