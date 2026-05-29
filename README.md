@@ -347,13 +347,15 @@ No changes to `src/index.ts` or server bootstrap required.
 
 ### Architecture split
 
-Read-only chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write paths use local wallet-backed services that sign with `CELO_PRIVATE_KEY`:
+Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) signs each step with `CELO_PRIVATE_KEY`:
 
 | Layer | Source | Examples |
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar status, ENS |
-| Writes | Local services | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave` |
+| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave` |
 | Self Agent ID | Local `SelfService` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
+
+Mento FX routing uses `@mento-protocol/mento-sdk` transitively through celina-sdk — MCP does not import it directly.
 
 Self Agent ID is **not** in celina-sdk. For frontend Self flows use [`@selfxyz/agent-sdk`](https://www.npmjs.com/package/@selfxyz/agent-sdk).
 
@@ -363,10 +365,10 @@ Self Agent ID is **not** in celina-sdk. For frontend Self flows use [`@selfxyz/a
 |------|---------|
 | `src/index.ts` | stdio MCP bootstrap — loads env, connects transport |
 | `src/server/` | `createServer()` factory and LLM instructions |
-| `src/context/` | Composes SDK read services + wallet-backed write services |
+| `src/context/` | Composes SDK read services + SDK prepare* write executors |
 | `src/tools/` | One file per domain; all registered in `src/tools/index.ts` |
-| `src/services/` | Execute/sign implementations (not exported by SDK) |
-| `src/config/` | Env, token registry, Self/Aave constants |
+| `src/services/` | Wallet executor (`execute-prepared-flow.ts`) and Self Agent ID |
+| `src/config/` | Env, token registry, Self constants |
 
 ### Tool module pattern
 
