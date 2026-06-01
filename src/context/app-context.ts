@@ -11,7 +11,6 @@ import { TransactionService } from "../services/transaction.service.js";
 import { MentoFxService } from "../services/mento-fx.service.js";
 import { UniswapService } from "../services/uniswap.service.js";
 import { AaveService } from "../services/aave.service.js";
-import { SelfService } from "../services/self.service.js";
 import type { AppConfig } from "../config/env.js";
 
 function assertSdkServices(
@@ -23,6 +22,8 @@ function assertSdkServices(
     "nft",
     "contract",
     "uniswap",
+    "carbon",
+    "self",
   ] as const;
 
   for (const key of required) {
@@ -58,9 +59,10 @@ export interface AppContext {
   staking: ReturnType<typeof createCelinaClient>["staking"];
   nft: ReturnType<typeof createCelinaClient>["nft"];
   contract: ReturnType<typeof createCelinaClient>["contract"];
-  /** Self Agent ID — requires `SELF_AGENT_PRIVATE_KEY`. */
-  self: SelfService;
+  /** Self Agent ID — from celina-sdk; requires `SELF_AGENT_PRIVATE_KEY` for signing tools. */
+  self: ReturnType<typeof createCelinaClient>["self"];
   ens: ReturnType<typeof createCelinaClient>["ens"];
+  carbon: ReturnType<typeof createCelinaClient>["carbon"];
 }
 
 /**
@@ -71,11 +73,15 @@ export function createAppContext(
   clientFactory: CeloClientFactory,
   config: AppConfig,
   walletAddress?: `0x${string}`,
-  selfAgentPrivateKey?: `0x${string}`,
 ): AppContext {
   const sdk = createCelinaClient({
     rpcUrl: config.rpcUrl,
     ethRpcUrl: config.ethRpcUrl,
+    selfAgentPrivateKey: config.selfAgentPrivateKey,
+    selfApiBase:
+      typeof process !== "undefined"
+        ? process.env.SELF_AGENT_API_BASE
+        : undefined,
   });
 
   assertSdkServices(sdk);
@@ -84,7 +90,7 @@ export function createAppContext(
     config: {
       hasWallet: Boolean(walletAddress),
       walletAddress,
-      hasSelfAgentKey: Boolean(selfAgentPrivateKey),
+      hasSelfAgentKey: Boolean(config.selfAgentPrivateKey),
     },
     blockchain: sdk.blockchain,
     account: sdk.account,
@@ -99,7 +105,8 @@ export function createAppContext(
     staking: sdk.staking,
     nft: sdk.nft,
     contract: sdk.contract,
-    self: new SelfService(clientFactory, selfAgentPrivateKey),
+    self: sdk.self,
     ens: sdk.ens,
+    carbon: sdk.carbon,
   };
 }

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
-import { selfDemoUrl } from "../config/self.js";
+import { selfDemoUrl } from "@andrewkimjoseph/celina-sdk";
 import type { ToolModule } from "./types.js";
 import { addressSchema } from "../schemas/common.js";
 import { err, ok, okSelfSession } from "./helpers.js";
