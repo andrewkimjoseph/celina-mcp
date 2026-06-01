@@ -357,7 +357,7 @@ Daily G$ claims via UBISchemeV2 on Celo (`0x43d72Ff17701B2DA814620735C39C620Ce0e
 | `get_gooddollar_ubi_entitlement` | read | Claimable G$, whitelist root, eligibility reasons |
 | `claim_daily_gooddollar_ubi` | write | Claims for MCP server wallet (`CELO_PRIVATE_KEY`); stdio only |
 
-Recommended flow: `get_gooddollar_ubi_entitlement` → `claim_daily_gooddollar_ubi` (or use SDK `prepareClaimUbi` / Celeste `prepare_claim_daily_gooddollar_ubi` for user wallet signing).
+Recommended flow: `get_gooddollar_ubi_entitlement` → `claim_daily_gooddollar_ubi` (or use SDK `prepareClaimUbi` / Celeste AI `prepare_claim_daily_gooddollar_ubi` for user wallet signing).
 
 Details: [celina-sdk GoodDollar guide](../celina-sdk/docs/guides/gooddollar.md).
 
