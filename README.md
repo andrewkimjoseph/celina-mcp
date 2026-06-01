@@ -201,7 +201,9 @@ A public read-only endpoint is available at **https://mcp.usecelina.xyz/api/mcp*
 
 The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, etc.
+**Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, **Carbon DeFi read/simulate/help tools** (`get_carbon_*`, `explore_carbon_pair`, `simulate_carbon_strategy`, `carbon_help`, `carbon_learn`), etc.
+
+**Hosted MCP:** `prepare_carbon_*` write tools are omitted server-side (`carbonWritesEnabled: false`). Use local stdio for unsigned strategy/trade preparation.
 
 **Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap` (require local `CELO_PRIVATE_KEY` via stdio).
 
@@ -353,11 +355,11 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar status, ENS |
 | Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave` |
-| Self Agent ID | Local `SelfService` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
+| Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 
 Mento FX routing uses `@mento-protocol/mento-sdk` transitively through celina-sdk — MCP does not import it directly.
 
-Self Agent ID is **not** in celina-sdk. For frontend Self flows use [`@selfxyz/agent-sdk`](https://www.npmjs.com/package/@selfxyz/agent-sdk).
+Self Agent ID is implemented in [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) (`client.self`). For browser-first Self UIs, also see [`@selfxyz/agent-sdk`](https://www.npmjs.com/package/@selfxyz/agent-sdk).
 
 ### Directory map
 
@@ -367,7 +369,7 @@ Self Agent ID is **not** in celina-sdk. For frontend Self flows use [`@selfxyz/a
 | `src/server/` | `createServer()` factory and LLM instructions |
 | `src/context/` | Composes SDK read services + SDK prepare* write executors |
 | `src/tools/` | One file per domain; all registered in `src/tools/index.ts` |
-| `src/services/` | Wallet executor (`execute-prepared-flow.ts`) and Self Agent ID |
+| `src/services/` | Wallet executor (`execute-prepared-flow.ts`) |
 | `src/config/` | Env, token registry, Self constants |
 
 ### Tool module pattern
@@ -396,6 +398,7 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 - [x] Aave lending tools (`supply_aave`, `withdraw_aave`) — USDT, WETH, USDm, USDC, CELO, EURm
 - [x] Self proof verification (`verify_self_agent`, `verify_self_request`, `ai.self.xyz`)
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
+- [x] Carbon DeFi on Celo — 25 tools (hybrid `@bancor/carbon-sdk` + Carbon REST); see [celina-sdk carbon guide](../celina-sdk/docs/guides/carbon.md)
 
 ## Development
 
