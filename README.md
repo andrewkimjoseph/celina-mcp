@@ -178,7 +178,7 @@ npm run inspect
 ### Tips
 
 - Use models with reliable tool-calling support; small or older models may skip tools or call them incorrectly.
-- Start with read-only prompts, e.g. *"What's the USDm balance of 0x…?"* or *"Is this wallet GoodDollar whitelisted?"*
+- Start with read-only prompts, e.g. *"What's the USDm balance of 0x…?"*, *"Is this wallet GoodDollar whitelisted?"*, or *"Can this address claim GoodDollar UBI today?"*
 - Keep private keys in env vars only — never commit them to config files in git.
 
 ## Hosted (read-only)
@@ -201,11 +201,11 @@ A public read-only endpoint is available at **https://mcp.usecelina.xyz/api/mcp*
 
 The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, and all **12 Carbon DeFi read tools** (see [Carbon DeFi](#carbon-defi-on-celo)), etc.
+**Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, and all **12 Carbon DeFi read tools** (see [Carbon DeFi](#carbon-defi-on-celo)), etc.
 
 **Hosted MCP:** `prepare_carbon_*` write tools are omitted server-side (`carbonWritesEnabled: false`). Use local stdio for unsigned strategy/trade preparation.
 
-**Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap` (require local `CELO_PRIVATE_KEY` via stdio).
+**Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap` (require local `CELO_PRIVATE_KEY` via stdio).
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -213,13 +213,13 @@ See [celina-mcp-host/README.md](../celina-mcp-host/README.md) if you want to dep
 
 ## Write tools
 
-Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
+Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
 
 ## Environment variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CELO_PRIVATE_KEY` | — | Write tools (send, Mento FX, Uniswap v4, Aave) |
+| `CELO_PRIVATE_KEY` | — | Write tools (send, Mento FX, Uniswap v4, Aave, GoodDollar UBI claim) |
 | `SELF_AGENT_PRIVATE_KEY` | — | Self Agent ID signing/identity tools (separate from CELO wallet) |
 | `SELF_AGENT_API_BASE` | `https://app.ai.self.xyz` | Override Self Agent ID REST API base URL |
 | `CELO_RPC_URL_MAINNET` | Forno public RPC | Override mainnet RPC |
@@ -347,6 +347,20 @@ For pairs Mento cannot route (e.g. GoodDollar → USDT), use Uniswap. CELO swaps
 
 Recommended LLM flow: quote both when unsure (`get_mento_fx_quote` and `get_uniswap_quote`), compare `expectedOut`, then estimate and execute on the better route.
 
+### GoodDollar UBI
+
+Daily G$ claims via UBISchemeV2 on Celo (`0x43d72Ff17701B2DA814620735C39C620Ce0ea4A1`). Identity must be whitelisted; connected wallets resolve to their verified root. **One claim per identity per day.**
+
+| Tool | Type | Notes |
+|------|------|-------|
+| `get_gooddollar_whitelisting_info` | read | IdentityV4 status, reverification timeline |
+| `get_gooddollar_ubi_entitlement` | read | Claimable G$, whitelist root, eligibility reasons |
+| `claim_daily_gooddollar_ubi` | write | Claims for MCP server wallet (`CELO_PRIVATE_KEY`); stdio only |
+
+Recommended flow: `get_gooddollar_ubi_entitlement` → `claim_daily_gooddollar_ubi` (or use SDK `prepareClaimUbi` / Celeste `prepare_claim_daily_gooddollar_ubi` for user wallet signing).
+
+Details: [celina-sdk GoodDollar guide](../celina-sdk/docs/guides/gooddollar.md).
+
 ### Self Agent ID notes
 
 - **Registration lifecycle APIs** (`register_self_agent`, `refresh_self_proof`, `deregister_self_agent`) use `network: "mainnet"` in the Self REST API request body.
@@ -393,7 +407,7 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 
 | Layer | Source | Examples |
 |-------|--------|----------|
-| Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar status, ENS, Carbon reads/simulate |
+| Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar whitelist/UBI, ENS, Carbon reads/simulate |
 | Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi` |
 | Carbon prepare | celina-sdk `carbon.prepare*` | `prepare_carbon_*` — unsigned only; user signs (local stdio / SDK apps) |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
