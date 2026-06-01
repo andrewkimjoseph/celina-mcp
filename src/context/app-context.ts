@@ -11,6 +11,7 @@ import { TransactionService } from "../services/transaction.service.js";
 import { MentoFxService } from "../services/mento-fx.service.js";
 import { UniswapService } from "../services/uniswap.service.js";
 import { AaveService } from "../services/aave.service.js";
+import { GoodDollarWriteService } from "../services/gooddollar.service.js";
 import type { AppConfig } from "../config/env.js";
 
 function assertSdkServices(
@@ -55,6 +56,7 @@ export interface AppContext {
   uniswap: UniswapService;
   aave: AaveService;
   gooddollar: ReturnType<typeof createCelinaClient>["gooddollar"];
+  gooddollarWrite: GoodDollarWriteService;
   governance: ReturnType<typeof createCelinaClient>["governance"];
   staking: ReturnType<typeof createCelinaClient>["staking"];
   nft: ReturnType<typeof createCelinaClient>["nft"];
@@ -101,6 +103,7 @@ export function createAppContext(
     uniswap: new UniswapService(clientFactory, sdk),
     aave: new AaveService(clientFactory, sdk),
     gooddollar: sdk.gooddollar,
+    gooddollarWrite: new GoodDollarWriteService(clientFactory, sdk),
     governance: sdk.governance,
     staking: sdk.staking,
     nft: sdk.nft,

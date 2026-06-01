@@ -269,6 +269,8 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `supply_aave` | write | Supply tokens to Aave V3 on Celo (USDT, WETH, USDm, USDC, CELO, EURm) |
 | `withdraw_aave` | write | Withdraw tokens from Aave V3 on Celo |
 | `get_gooddollar_whitelisting_info` | read | GoodDollar IdentityV4 whitelist status |
+| `get_gooddollar_ubi_entitlement` | read | Daily UBI claim eligibility (amount, whitelist root, reasons) |
+| `claim_daily_gooddollar_ubi` | write | Claim today's GoodDollar UBI (G$) for the MCP server wallet |
 | `get_governance_proposals` | read | Celo governance proposals (paginated) |
 | `get_proposal_details` | read | Governance proposal details + CGP content |
 | `get_staking_balances` | read | Staking votes by validator group |
@@ -392,7 +394,7 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 | Layer | Source | Examples |
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar status, ENS, Carbon reads/simulate |
-| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave` |
+| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi` |
 | Carbon prepare | celina-sdk `carbon.prepare*` | `prepare_carbon_*` — unsigned only; user signs (local stdio / SDK apps) |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 

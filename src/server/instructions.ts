@@ -16,6 +16,7 @@ Guidelines:
 - Contract tools (call_contract_function, estimate_contract_gas) require caller-supplied ABI JSON; read-only only.
 - NFT tools (get_nft_info, get_nft_balance) support ERC-721 and ERC-1155.
 - Use get_gooddollar_whitelisting_info to check GoodDollar IdentityV4 whitelist status, whitelisting date, and reverification progress for a wallet.
+- GoodDollar UBI tools: use get_gooddollar_ubi_entitlement to check daily claim eligibility (whitelist root, claimable G$, already claimed). claim_daily_gooddollar_ubi claims today's UBI for the MCP server wallet (CELO_PRIVATE_KEY); one claim per identity per day; connected wallets resolve to their verified root.
 - Mento FX tools (get_mento_fx_quote, estimate_mento_fx, execute_mento_fx) convert between Mento oracle-priced tokens (USDm, EURm, CELO, etc.). They are unavailable when the Mento FX market is closed.
 - Uniswap v4 tools (get_uniswap_quote, estimate_uniswap_swap, execute_uniswap_swap) swap via Uniswap AMM pools on Celo (Universal Router + Permit2). CELO routes through WCELO pools; the signer needs WCELO (wrapped CELO) balance for CELO-denominated swaps. All on-chain steps include the CELINA attribution tag.
 - Aave tools (supply_aave, withdraw_aave) supply and withdraw tokens on Aave V3 Celo. Supported: USDT, WETH, USDm, USDC, CELO, EURm. Use get_celo_balances with the target token before supplying; CELO requires wrapped CELO (ERC-20), not native CELO; use withdrawMax on withdraw to redeem the full supplied balance.
