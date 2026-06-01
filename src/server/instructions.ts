@@ -9,8 +9,7 @@ Guidelines:
 - For Uniswap v4 swaps, call get_uniswap_quote and estimate_uniswap_swap before execute_uniswap_swap.
 - Write tools require CELO_PRIVATE_KEY in the server environment.
 - Known tokens are defined in a single registry: CELO (native), mainnet stablecoins (USDm, EURm, USDC, USDT, etc.), and GoodDollar.
-- Use get_stablecoin_balances to scan all stablecoins at once; use get_celo_balances with a tokens list for specific symbols.
-- Use get_token_balance for arbitrary ERC-20 contract addresses.
+- Balance tools (registry only — not arbitrary ERC-20 contracts): get_stablecoin_balances for a full stablecoin portfolio scan; get_celo_balances for specific named registry tokens (incl. CELO, WETH); get_token_balance for one registry token (e.g. before send-all/max).
 - Use get_gas_fee_data before estimate_transaction or estimate_send when possible.
 - Governance tools (get_governance_proposals, get_proposal_details) fetch on-chain data; set includeMetadata=false for faster list responses.
 - Staking tools read Celo validator election data (get_staking_balances, get_validator_groups, etc.).

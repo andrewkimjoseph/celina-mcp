@@ -12,10 +12,13 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Celo Balances",
         description:
-          "Returns native CELO and ERC-20 balances for an address on mainnet. Defaults to CELO + USDm.",
+          "Balances for named registry tokens on Celo mainnet. Default tokens: CELO + USDm. Pass tokens for specific symbols (USDC, WETH, EURm, …).",
         inputSchema: z.object({
           address: addressSchema,
-          tokens: z.array(tokenSymbolSchema).optional(),
+          tokens: z
+            .array(tokenSymbolSchema)
+            .optional()
+            .describe("Registry token symbols to check (default: CELO, USDm)."),
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
@@ -38,7 +41,7 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Stablecoin Balances",
         description:
-          "Returns balances for Celo mainnet local stablecoins (Mento, USDC, USDT, etc.). Checks all stablecoins by default and omits zero balances.",
+          "Scan all registry stablecoins for an address in one call (Mento stables, USDC, USDT, GoodDollar, etc.). Omits zero balances by default.",
         inputSchema: z.object({
           address: addressSchema,
           stablecoins: z
@@ -73,7 +76,7 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Token Info",
         description:
-          "Returns metadata for a Celo mainnet registry token.",
+          "Registry token metadata (symbol, address, decimals). Does not read balances.",
         inputSchema: z.object({
           token: tokenSymbolSchema,
         }),
@@ -93,7 +96,7 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Token Balance",
         description:
-          "Returns balance for a Celo mainnet registry token. Pass a symbol (USDC, USDT, USDm, …).",
+          "Balance for one registry token. Pass a symbol (USDC, USDm, CELO, …) or a known registry contract address.",
         inputSchema: z.object({
           token: tokenSymbolSchema,
           address: addressSchema,

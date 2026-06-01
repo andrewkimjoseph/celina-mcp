@@ -9,7 +9,7 @@
 <h1 align="center">Celina — Celo MCP Server</h1>
 
 <p align="center">
-  <strong>Celina</strong> is an open-source <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server that gives LLMs read + write access to <strong>Celo mainnet</strong> — balances, stablecoins, sends, and chain reads.
+  <strong>Celina</strong> is an open-source <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server that gives LLMs read + write access to <strong>Celo mainnet</strong> — balances, stablecoins, sends, Mento FX, Uniswap v4, Aave, <a href="#carbon-defi-on-celo">Carbon DeFi</a> maker/taker tools, and chain reads.
 </p>
 
 <p align="center">
@@ -201,7 +201,7 @@ A public read-only endpoint is available at **https://mcp.usecelina.xyz/api/mcp*
 
 The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, **Carbon DeFi read/simulate/help tools** (`get_carbon_*`, `explore_carbon_pair`, `simulate_carbon_strategy`, `carbon_help`, `carbon_learn`), etc.
+**Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, and all **12 Carbon DeFi read tools** (see [Carbon DeFi](#carbon-defi-on-celo)), etc.
 
 **Hosted MCP:** `prepare_carbon_*` write tools are omitted server-side (`carbonWritesEnabled: false`). Use local stdio for unsigned strategy/trade preparation.
 
@@ -237,9 +237,9 @@ All supported tokens live in a single registry (`src/config/chains.ts`):
 | Bridged / third-party | `USDT`, `USDC`, `vEUR`, `vGBP`, `vCHF`, `USDM`, `USDA`, `EURA`, `USDGLO`, `BRLA`, `COPM` |
 | GoodDollar | `GoodDollar`, `G$` (`0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A`) |
 
-Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` map to `USDm` and `EURm`. You can also pass any ERC-20 contract address directly.
+Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` map to `USDm` and `EURm`. You can also pass a known registry contract address.
 
-- `get_celo_balances` — check specific tokens (defaults to `CELO` + `USDm`)
+- `get_celo_balances` — named registry tokens (defaults to `CELO` + `USDm`)
 - `get_stablecoin_balances` — scan all registry stablecoins in one call (omits zero balances by default)
 
 ## Tools
@@ -252,10 +252,10 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `get_transaction` | read | Tx + receipt |
 | `get_account` | read | CELO balance, nonce |
 | `resolve_ens` | read | Resolve Celo or Ethereum ENS name |
-| `get_celo_balances` | read | CELO + ERC-20 balances (default: CELO + USDm) |
-| `get_stablecoin_balances` | read | All registry stablecoins including GoodDollar |
-| `get_token_info` | read | Token metadata |
-| `get_token_balance` | read | ERC-20 balance by contract address |
+| `get_celo_balances` | read | Named registry token balances (default: CELO + USDm) |
+| `get_stablecoin_balances` | read | Scan all registry stablecoins; omits zero balances by default |
+| `get_token_info` | read | Registry token metadata (no balance read) |
+| `get_token_balance` | read | Single registry token balance (symbol or known registry address) |
 | `get_gas_fee_data` | read | Current gas fees (EIP-1559 when supported) |
 | `estimate_transaction` | read | Generic tx gas estimate (from/to/value/data) |
 | `estimate_send` | read* | Token send gas estimate (*needs `CELO_PRIVATE_KEY`) |
@@ -290,6 +290,44 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `deregister_self_agent` | write | Irreversibly revoke Self agent identity |
 | `sign_self_request` | read* | Sign HTTP request with Self agent headers (*needs agent key) |
 | `authenticated_self_fetch` | write | HTTP fetch with Self agent auth (*needs agent key) |
+
+### Carbon DeFi on Celo
+
+25 tools for Carbon maker strategies and taker swaps on Celo mainnet (hybrid Carbon REST + `@bancor/carbon-sdk`). Read/simulate/help tools work on hosted MCP; `prepare_carbon_*` tools require **local stdio** (unsigned txs — user signs; no `CELO_PRIVATE_KEY` required for prepare).
+
+| Tool | Type | Description |
+|------|------|-------------|
+| `get_carbon_strategies` | read | Active maker strategies for a wallet (call before create/manage) |
+| `get_carbon_strategy` | read | Strategy by NFT id (status, prices, budgets, fills) |
+| `get_carbon_trade_quote` | read | Taker swap quote against Carbon liquidity (SDK fallback if REST fails) |
+| `explore_carbon_pair` | read | Liquidity and top strategies for a base/quote pair |
+| `resolve_carbon_token` | read | Resolve symbol/name to Celo address (Carbon API + Celina registry fallback) |
+| `get_carbon_activity` | read | Trade and event history for wallet or strategy |
+| `find_carbon_opportunities` | read | Discount buys / premium sells vs market on a pair |
+| `get_carbon_protocol_stats` | read | TVL, volume, fees (optional `period_days`, up to 30) |
+| `get_carbon_price_history` | read | Historical OHLC for a pair |
+| `simulate_carbon_strategy` | read | Backtest strategy config (up to 365 days) before committing capital |
+| `carbon_help` | read | Per-tool guidance (`topic` optional) |
+| `carbon_learn` | read | Protocol education (`topic` optional, e.g. `recurring_strategy`) |
+| `prepare_carbon_limit_order` | prepare* | One-time limit order (unsigned) |
+| `prepare_carbon_range_order` | prepare* | Range order — gradual execution (unsigned) |
+| `prepare_carbon_recurring_strategy` | prepare* | Recurring buy/sell strategy; makers pay no gas on fills (unsigned) |
+| `prepare_carbon_concentrated_strategy` | prepare* | Concentrated two-sided liquidity (unsigned) |
+| `prepare_carbon_full_range_strategy` | prepare* | Full-range liquidity (unsigned) |
+| `prepare_carbon_reprice_strategy` | prepare* | Update price ranges of existing strategy (unsigned) |
+| `prepare_carbon_edit_strategy` | prepare* | Edit prices, budgets, optional type (unsigned) |
+| `prepare_carbon_deposit_budget` | prepare* | Add funds to strategy (unsigned) |
+| `prepare_carbon_withdraw_budget` | prepare* | Withdraw funds from strategy (unsigned) |
+| `prepare_carbon_pause_strategy` | prepare* | Pause strategy; funds remain (unsigned) |
+| `prepare_carbon_resume_strategy` | prepare* | Resume paused strategy (unsigned) |
+| `prepare_carbon_delete_strategy` | prepare* | Permanently close strategy (unsigned) |
+| `prepare_carbon_trade` | prepare* | Taker swap against Carbon liquidity (unsigned) |
+
+\* `prepare_carbon_*` omitted on hosted MCP (`carbonWritesEnabled: false`). Returns `preparedFlow` steps and API **`warnings`** — always surface warnings before the user signs. Prices are **quote per 1 base**; buy budget in quote, sell budget in base. Carbon API rate limit ~30 req/min — avoid burst parallel calls.
+
+Recommended flow: `get_carbon_strategies` → `explore_carbon_pair` / `get_carbon_trade_quote` → `simulate_carbon_strategy` (when sizing capital) → `prepare_carbon_*` → user signs in wallet.
+
+Details: [celina-sdk Carbon guide](../celina-sdk/docs/guides/carbon.md).
 
 ### Mento FX vs Uniswap v4
 
@@ -353,8 +391,9 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 
 | Layer | Source | Examples |
 |-------|--------|----------|
-| Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar status, ENS |
+| Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar status, ENS, Carbon reads/simulate |
 | Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave` |
+| Carbon prepare | celina-sdk `carbon.prepare*` | `prepare_carbon_*` — unsigned only; user signs (local stdio / SDK apps) |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 
 Mento FX routing uses `@mento-protocol/mento-sdk` transitively through celina-sdk — MCP does not import it directly.
