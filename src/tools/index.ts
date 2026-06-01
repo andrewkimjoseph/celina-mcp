@@ -15,6 +15,11 @@ import { mentoFxTools } from "./mento-fx.tools.js";
 import { uniswapTools } from "./uniswap.tools.js";
 import { aaveTools } from "./aave.tools.js";
 import { ensTools } from "./ens.tools.js";
+import { createCarbonToolsModule } from "./carbon.tools.js";
+
+export type RegisterToolsOptions = {
+  carbonWritesEnabled?: boolean;
+};
 
 export const toolModules: ToolModule[] = [
   blockchainTools,
@@ -34,8 +39,16 @@ export const toolModules: ToolModule[] = [
 ];
 
 /** Register every domain tool module on the MCP server. */
-export function registerAllTools(server: McpServer, ctx: AppContext): void {
+export function registerAllTools(
+  server: McpServer,
+  ctx: AppContext,
+  options: RegisterToolsOptions = {},
+): void {
   for (const module of toolModules) {
     module.register(server, ctx);
   }
+
+  createCarbonToolsModule({
+    writesEnabled: options.carbonWritesEnabled !== false,
+  }).register(server, ctx);
 }

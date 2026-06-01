@@ -3,7 +3,7 @@ import {
   formatSelfSessionLinksDisplay,
   resolveSelfSessionLinks,
   type SelfSessionLinks,
-} from "../utils/self-format.js";
+} from "@andrewkimjoseph/celina-sdk";
 
 export function ok(data: unknown): CallToolResult {
   const text = JSON.stringify(data, null, 2);

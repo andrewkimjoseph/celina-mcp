@@ -10,7 +10,12 @@ import { SERVER_INSTRUCTIONS } from "./instructions.js";
 const require = createRequire(import.meta.url);
 const { version } = require("../../package.json") as { version: string };
 
-export function createServer(): McpServer {
+export type CreateServerOptions = {
+  /** Hosted deployment: Carbon prepare tools omitted (read-only Carbon). */
+  carbonWritesEnabled?: boolean;
+};
+
+export function createServer(options: CreateServerOptions = {}): McpServer {
   const config = loadConfig();
   const clientFactory = new CeloClientFactory(config);
   const clients = clientFactory.getClients();
@@ -28,12 +33,8 @@ export function createServer(): McpServer {
 
   registerAllTools(
     server,
-    createAppContext(
-      clientFactory,
-      config,
-      clients.accountAddress,
-      config.selfAgentPrivateKey,
-    ),
+    createAppContext(clientFactory, config, clients.accountAddress),
+    { carbonWritesEnabled: options.carbonWritesEnabled },
   );
 
   return server;

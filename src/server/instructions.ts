@@ -27,4 +27,12 @@ Guidelines:
   - Self session tools (register_self_agent, refresh_self_proof, deregister_self_agent) always return qr_code_url AND deep_link. Always present BOTH links to the human — never omit one.
   - Auth: sign_self_request, authenticated_self_fetch (require SELF_AGENT_PRIVATE_KEY). For Self demo/gated APIs use ?network=celo-mainnet (not mainnet), e.g. POST https://app.ai.self.xyz/api/demo/verify?network=celo-mainnet
 - Self agent keys are separate from CELO_PRIVATE_KEY. Registration sessions are in-memory (~10 min TTL).
+- Carbon DeFi on Celo (maker strategies + taker swaps via Carbon REST + carbon-sdk):
+  - Always call get_carbon_strategies before create or manage operations; check warnings on every prepare response.
+  - Prices are quote per 1 base; buy budget in quote, sell budget in base. Market price is auto-fetched by the Carbon API.
+  - Use simulate_carbon_strategy before committing capital when possible (2–3 configs → compare → prepare).
+  - Recurring strategies (prepare_carbon_recurring_strategy) suit set-and-forget buy-low/sell-high on Celo; makers pay no gas on fills.
+  - prepare_carbon_* tools return unsigned transactions — user signs and broadcasts (agent never submits).
+  - Read/explore: explore_carbon_pair, get_carbon_protocol_stats, find_carbon_opportunities, carbon_help, carbon_learn.
+  - Carbon API rate limit ~30 req/min — avoid burst parallel Carbon calls.
 `.trim();
