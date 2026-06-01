@@ -16,12 +16,17 @@ function collectRegisteredToolNames(): string[] {
     (file) => file.endsWith(".tools.ts") && file !== "index.ts",
   );
 
-  const pattern = /registerTool\(\s*["'`]([^"'`]+)["'`]/g;
+  const patterns = [
+    /registerTool\(\s*["'`]([^"'`]+)["'`]/g,
+    /registerPrepare\(\s*["'`]([^"'`]+)["'`]/g,
+  ];
 
   for (const file of files) {
     const source = readFileSync(path.join(TOOLS_DIR, file), "utf8");
-    for (const match of source.matchAll(pattern)) {
-      names.add(match[1]);
+    for (const pattern of patterns) {
+      for (const match of source.matchAll(pattern)) {
+        names.add(match[1]);
+      }
     }
   }
 

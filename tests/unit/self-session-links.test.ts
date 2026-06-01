@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatSelfSessionLinksDisplay,
   resolveSelfSessionLinks,
-} from "../../src/utils/self-format.js";
+} from "@andrewkimjoseph/celina-sdk";
 import { okSelfSession } from "../../src/tools/helpers.js";
 
 describe("resolveSelfSessionLinks", () => {
@@ -50,7 +50,8 @@ describe("okSelfSession", () => {
       agent_address: "0xabc",
     });
 
-    const text = result.content[0]?.text ?? "";
+    const block = result.content[0];
+    const text = block?.type === "text" ? block.text : "";
     expect(text).toContain("QR code URL: https://app.ai.self.xyz/scan/abc123");
     expect(text).toContain("Deep link: self://register/abc123");
     expect(text).toContain("Present BOTH links");
