@@ -5,17 +5,18 @@ import {
   type CarbonPrepareResult,
 } from "@andrewkimjoseph/celina-sdk";
 import type { AppContext } from "../context/app-context.js";
-import { addressSchema } from "../schemas/common.js";
+import { optionalWalletAddressSchema } from "../schemas/common.js";
 import type { ToolModule } from "./types.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 import {
   resolveCarbonToolsOptions,
   type CarbonToolsOptions,
 } from "./carbon-options.js";
 
 const walletField = {
-  wallet_address: addressSchema.describe(
-    "Wallet that owns or signs Carbon strategies on Celo",
+  wallet_address: optionalWalletAddressSchema.describe(
+    "Wallet that owns or signs Carbon strategies on Celo. Omit to use the configured signer when CELO_PRIVATE_KEY is set.",
   ),
 };
 
@@ -49,13 +50,13 @@ export function createCarbonToolsModule(
         {
           title: "Get Carbon Strategies",
           description:
-            "Fetch active Carbon DeFi maker strategies for a wallet on Celo. Call before create or manage operations.",
+            "Fetch active Carbon DeFi maker strategies for a wallet on Celo. Call before create or manage operations. Omit wallet_address to use the configured signer when CELO_PRIVATE_KEY is set.",
           inputSchema: z.object(walletField),
           annotations: { readOnlyHint: true },
         },
         async ({ wallet_address }) =>
           wrap(() =>
-            ctx.carbon.getStrategies(wallet_address as `0x${string}`),
+            ctx.carbon.getStrategies(resolveWalletAddress(ctx, wallet_address)),
           )(),
       );
 
@@ -122,11 +123,19 @@ export function createCarbonToolsModule(
         "get_carbon_activity",
         {
           title: "Get Carbon Activity",
-          description: "Trade and event history for a wallet or strategy on Celo.",
+          description:
+            "Trade and event history for a wallet or strategy on Celo. Omit wallet_address to use the configured signer when CELO_PRIVATE_KEY is set.",
           inputSchema: z.object(walletField).passthrough(),
           annotations: { readOnlyHint: true },
         },
-        async (args) => wrap(() => ctx.carbon.getActivity(args))(),
+        async (args) =>
+          wrap(() => {
+            const wallet_address = resolveWalletAddress(
+              ctx,
+              args.wallet_address as string | undefined,
+            );
+            return ctx.carbon.getActivity({ ...args, wallet_address });
+          })(),
       );
 
       server.registerTool(
@@ -226,21 +235,25 @@ export function createCarbonToolsModule(
             annotations: { openWorldHint: true },
           },
           async (args) => {
-            const wallet = args.wallet_address as `0x${string}` | undefined;
-            if (!wallet) {
-              return err("wallet_address is required");
-            }
-            return wrap(async () => {
-              const body = { ...args, wallet_address: wallet };
-              const prepared = await invoke(body);
-              const preparedFlow = await finalizeCarbonPrepare(
-                ctx.carbon,
-                wallet,
-                prepared,
-                body,
+            try {
+              const wallet = resolveWalletAddress(
+                ctx,
+                args.wallet_address as string | undefined,
               );
-              return { ...prepared, preparedFlow };
-            })();
+              return wrap(async () => {
+                const body = { ...args, wallet_address: wallet };
+                const prepared = await invoke(body);
+                const preparedFlow = await finalizeCarbonPrepare(
+                  ctx.carbon,
+                  wallet,
+                  prepared,
+                  body,
+                );
+                return { ...prepared, preparedFlow };
+              })();
+            } catch (error) {
+              return err(error instanceof Error ? error.message : String(error));
+            }
           },
         );
       };
