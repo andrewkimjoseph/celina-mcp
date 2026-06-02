@@ -203,7 +203,7 @@ The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do
 
 **Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, and all **12 Carbon DeFi read tools** (see [Carbon DeFi](#carbon-defi-on-celo)), etc.
 
-**Hosted MCP:** **71 tools** — all reads, **`prepare_carbon_*`** (unsigned flows with approve + Carbon steps), and estimates. **`execute_carbon_*`** and server-key writes (`send_token`, `execute_mento_fx`, etc.) require **local stdio** with `CELO_PRIVATE_KEY`.
+**Hosted MCP:** **72 tools** — all reads, **`prepare_carbon_*`** (unsigned flows with approve + Carbon steps), and estimates. **`execute_carbon_*`** and server-key writes (`send_token`, `execute_mento_fx`, etc.) require **local stdio** with `CELO_PRIVATE_KEY`.
 
 **Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap` (require local `CELO_PRIVATE_KEY` via stdio).
 
@@ -214,6 +214,20 @@ See [celina-mcp-host/README.md](../celina-mcp-host/README.md) if you want to dep
 ## Write tools
 
 Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
+
+## Session wallet (local stdio)
+
+When `CELO_PRIVATE_KEY` is set, the server derives a **session wallet** at startup (`privateKeyToAccount` → `ctx.config.walletAddress`). Agents should use it like this:
+
+1. **`get_wallet_address`** — returns the signer when you need the address as data (empty input).
+2. **Omit `address` / `wallet_address` / `from`** on wallet-scoped reads and `prepare_carbon_*` for “my” balances, strategies, and activity.
+3. **Never** derive addresses from shell or read `.env`.
+
+Wallet-scoped tools with optional address: `get_account`, token balance tools, staking reads, GoodDollar reads, `get_nft_balance`, `get_carbon_strategies`, `get_carbon_activity`, `estimate_transaction` (`from` only), contract reads (`fromAddress`), and all `prepare_carbon_*`.
+
+On **hosted** MCP (no key), pass explicit addresses. `get_wallet_address` returns an error without a configured key.
+
+Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) instead pass the user’s connected wallet on each call — see [MCP session wallet guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/mcp-session-wallet.md). **Celeste AI** is a separate app that uses the SDK + wagmi only (not this MCP server).
 
 ## Environment variables
 
@@ -250,7 +264,8 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 | `get_block` | read | Block by number/hash/latest (optional `includeTransactions`) |
 | `get_latest_blocks` | read | Recent blocks (optional `offset`, up to 100) |
 | `get_transaction` | read | Tx + receipt |
-| `get_account` | read | CELO balance, nonce |
+| `get_wallet_address` | read | Signer address from `CELO_PRIVATE_KEY` (stdio) |
+| `get_account` | read | CELO balance, nonce (omit `address` for configured signer) |
 | `resolve_ens` | read | Resolve Celo or Ethereum ENS name |
 | `get_celo_balances` | read | Named registry token balances (default: CELO + USDm) |
 | `get_stablecoin_balances` | read | Scan all registry stablecoins; omits zero balances by default |
