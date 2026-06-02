@@ -4,6 +4,10 @@ export const addressSchema = z
   .string()
   .regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address");
 
+export const optionalWalletAddressSchema = addressSchema
+  .optional()
+  .describe("Defaults to the CELO_PRIVATE_KEY signer when configured");
+
 export const addressOrEnsSchema = z
   .string()
   .min(3)
