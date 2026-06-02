@@ -16,8 +16,12 @@ import { uniswapTools } from "./uniswap.tools.js";
 import { aaveTools } from "./aave.tools.js";
 import { ensTools } from "./ens.tools.js";
 import { createCarbonToolsModule } from "./carbon.tools.js";
+import { resolveCarbonToolsOptions } from "./carbon-options.js";
 
 export type RegisterToolsOptions = {
+  carbonExecuteEnabled?: boolean;
+  carbonPrepareEnabled?: boolean;
+  /** @deprecated Use carbonExecuteEnabled + carbonPrepareEnabled */
   carbonWritesEnabled?: boolean;
 };
 
@@ -48,7 +52,13 @@ export function registerAllTools(
     module.register(server, ctx);
   }
 
-  createCarbonToolsModule({
-    writesEnabled: options.carbonWritesEnabled !== false,
-  }).register(server, ctx);
+  createCarbonToolsModule(
+    resolveCarbonToolsOptions({
+      prepareEnabled: options.carbonPrepareEnabled,
+      executeEnabled: options.carbonExecuteEnabled,
+      ...(options.carbonWritesEnabled === false
+        ? { writesEnabled: false }
+        : {}),
+    }),
+  ).register(server, ctx);
 }

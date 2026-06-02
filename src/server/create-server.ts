@@ -11,7 +11,11 @@ const require = createRequire(import.meta.url);
 const { version } = require("../../package.json") as { version: string };
 
 export type CreateServerOptions = {
-  /** Hosted deployment: Carbon prepare tools omitted (read-only Carbon). */
+  /** Omit execute_carbon_* (requires CELO_PRIVATE_KEY). Default true. */
+  carbonExecuteEnabled?: boolean;
+  /** Omit prepare_carbon_* (unsigned REST prep). Default true. */
+  carbonPrepareEnabled?: boolean;
+  /** @deprecated Use carbonExecuteEnabled + carbonPrepareEnabled */
   carbonWritesEnabled?: boolean;
 };
 
@@ -34,7 +38,11 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
   registerAllTools(
     server,
     createAppContext(clientFactory, config, clients.accountAddress),
-    { carbonWritesEnabled: options.carbonWritesEnabled },
+    {
+      carbonExecuteEnabled: options.carbonExecuteEnabled,
+      carbonPrepareEnabled: options.carbonPrepareEnabled,
+      carbonWritesEnabled: options.carbonWritesEnabled,
+    },
   );
 
   return server;
