@@ -2,8 +2,14 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
 import type { ToolModule } from "./types.js";
-import { addressOrEnsSchema, addressSchema, tokenSymbolSchema } from "../schemas/common.js";
+import {
+  addressOrEnsSchema,
+  addressSchema,
+  optionalWalletAddressSchema,
+  tokenSymbolSchema,
+} from "../schemas/common.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const transactionTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -80,9 +86,9 @@ export const transactionTools: ToolModule = {
       {
         title: "Estimate Transaction",
         description:
-          "Estimates gas for a generic transaction (to/value/data). Distinct from estimate_send for token transfers.",
+          "Estimates gas for a generic transaction (to/value/data). Distinct from estimate_send for token transfers. Omit from to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          from: addressSchema,
+          from: optionalWalletAddressSchema,
           to: addressSchema,
           value: z.string().optional().describe("Value in wei (decimal string)"),
           data: z
@@ -95,9 +101,10 @@ export const transactionTools: ToolModule = {
       },
       async ({ from, to, value, data }) => {
         try {
+          const sender = resolveWalletAddress(ctx, from);
           return ok(
             await ctx.sdkTransaction.estimateTransaction({
-              from: from as `0x${string}`,
+              from: sender,
               to: to as `0x${string}`,
               value,
               data: data as `0x${string}` | undefined,

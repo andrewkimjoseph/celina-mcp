@@ -2,9 +2,14 @@ import type { Abi } from "viem";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
-import { abiSchema, addressSchema } from "../schemas/common.js";
+import {
+  abiSchema,
+  addressSchema,
+  optionalWalletAddressSchema,
+} from "../schemas/common.js";
 import type { ToolModule } from "./types.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const contractTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -13,13 +18,13 @@ export const contractTools: ToolModule = {
       {
         title: "Call Contract Function",
         description:
-          "Calls a read-only contract function. Requires caller-supplied ABI JSON.",
+          "Calls a read-only contract function. Requires caller-supplied ABI JSON. Omit fromAddress to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
           contractAddress: addressSchema,
           functionName: z.string().min(1),
           abi: abiSchema,
           functionArgs: z.array(z.unknown()).optional(),
-          fromAddress: addressSchema.optional(),
+          fromAddress: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
@@ -31,13 +36,14 @@ export const contractTools: ToolModule = {
         fromAddress,
       }) => {
         try {
+          const from = resolveWalletAddress(ctx, fromAddress);
           return ok(
             await ctx.contract.callFunction({
               contractAddress: contractAddress as `0x${string}`,
               functionName,
               abi: abi as unknown as Abi,
               functionArgs,
-              fromAddress: fromAddress as `0x${string}` | undefined,
+              fromAddress: from,
             }),
           );
         } catch (error) {
@@ -51,12 +57,12 @@ export const contractTools: ToolModule = {
       {
         title: "Estimate Contract Gas",
         description:
-          "Estimates gas for a contract function call. Requires caller-supplied ABI JSON.",
+          "Estimates gas for a contract function call. Requires caller-supplied ABI JSON. Omit fromAddress to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
           contractAddress: addressSchema,
           functionName: z.string().min(1),
           abi: abiSchema,
-          fromAddress: addressSchema,
+          fromAddress: optionalWalletAddressSchema,
           functionArgs: z.array(z.unknown()).optional(),
           value: z.string().optional().describe("Value in wei (decimal string)"),
         }),
@@ -71,12 +77,13 @@ export const contractTools: ToolModule = {
         value,
       }) => {
         try {
+          const from = resolveWalletAddress(ctx, fromAddress);
           return ok(
             await ctx.contract.estimateGas({
               contractAddress: contractAddress as `0x${string}`,
               functionName,
               abi: abi as unknown as Abi,
-              fromAddress: fromAddress as `0x${string}`,
+              fromAddress: from,
               functionArgs,
               value,
             }),
