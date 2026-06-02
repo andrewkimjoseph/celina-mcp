@@ -1,9 +1,17 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import {
+  finalizeCarbonPrepare,
+  type CarbonPrepareResult,
+} from "@andrewkimjoseph/celina-sdk";
 import type { AppContext } from "../context/app-context.js";
 import { addressSchema } from "../schemas/common.js";
 import type { ToolModule } from "./types.js";
 import { err, ok } from "./helpers.js";
+import {
+  resolveCarbonToolsOptions,
+  type CarbonToolsOptions,
+} from "./carbon-options.js";
 
 const walletField = {
   wallet_address: addressSchema.describe(
@@ -26,15 +34,13 @@ function wrap(handler: () => Promise<unknown>) {
   };
 }
 
-export type CarbonToolsOptions = {
-  /** When false (hosted MCP), write/prepare tools are omitted. */
-  writesEnabled?: boolean;
-};
+export type { CarbonToolsOptions } from "./carbon-options.js";
 
 export function createCarbonToolsModule(
   options: CarbonToolsOptions = {},
 ): ToolModule {
-  const writesEnabled = options.writesEnabled !== false;
+  const { prepareEnabled, executeEnabled } =
+    resolveCarbonToolsOptions(options);
 
   return {
     register(server: McpServer, ctx: AppContext) {
@@ -199,15 +205,15 @@ export function createCarbonToolsModule(
         async ({ topic }) => wrap(() => ctx.carbon.learn(topic))(),
       );
 
-      if (!writesEnabled) return;
-
       const writeSchema = z.object({}).passthrough();
 
       const registerPrepare = (
         name: string,
         title: string,
         description: string,
-        invoke: (body: Record<string, unknown> & { wallet_address: `0x${string}` }) => Promise<unknown>,
+        invoke: (
+          body: Record<string, unknown> & { wallet_address: `0x${string}` },
+        ) => Promise<CarbonPrepareResult>,
       ) => {
         server.registerTool(
           name,
@@ -215,22 +221,51 @@ export function createCarbonToolsModule(
             title,
             description:
               description +
-              " Returns unsigned transaction data and warnings — user must sign. Prices are quote per base; buy budget in quote, sell budget in base.",
+              " Returns unsigned transaction steps (approvals + Carbon tx) and warnings — user must sign externally. Prices are quote per base; buy budget in quote, sell budget in base.",
             inputSchema: writeSchema,
-            annotations: { destructiveHint: true, openWorldHint: true },
+            annotations: { openWorldHint: true },
           },
           async (args) => {
             const wallet = args.wallet_address as `0x${string}` | undefined;
             if (!wallet) {
               return err("wallet_address is required");
             }
-            return wrap(() =>
-              invoke({ ...args, wallet_address: wallet }),
-            )();
+            return wrap(async () => {
+              const body = { ...args, wallet_address: wallet };
+              const prepared = await invoke(body);
+              const preparedFlow = await finalizeCarbonPrepare(
+                ctx.carbon,
+                wallet,
+                prepared,
+                body,
+              );
+              return { ...prepared, preparedFlow };
+            })();
           },
         );
       };
 
+      const registerExecute = (
+        name: string,
+        title: string,
+        description: string,
+        invoke: (body: Record<string, unknown>) => Promise<unknown>,
+      ) => {
+        server.registerTool(
+          name,
+          {
+            title,
+            description:
+              description +
+              " Requires CELO_PRIVATE_KEY in MCP server env. Signs and broadcasts locally (ERC-20 approve + Carbon tx when needed). Uses the MCP wallet — do not pass wallet_address unless it matches the configured key.",
+            inputSchema: writeSchema,
+            annotations: { destructiveHint: true, openWorldHint: true },
+          },
+          async (args) => wrap(() => invoke(args))(),
+        );
+      };
+
+      if (prepareEnabled) {
       registerPrepare(
         "prepare_carbon_limit_order",
         "Prepare Carbon Limit Order",
@@ -309,11 +344,94 @@ export function createCarbonToolsModule(
         "Build an unsigned taker swap against Carbon liquidity on Celo.",
         (body) => ctx.carbon.prepareTrade(body),
       );
+      }
+
+      if (executeEnabled) {
+      registerExecute(
+        "execute_carbon_limit_order",
+        "Execute Carbon Limit Order",
+        "Create and broadcast a one-time Carbon limit order on Celo.",
+        (body) => ctx.carbonWrite.executeLimitOrder(body),
+      );
+      registerExecute(
+        "execute_carbon_range_order",
+        "Execute Carbon Range Order",
+        "Create and broadcast a Carbon range order on Celo.",
+        (body) => ctx.carbonWrite.executeRangeOrder(body),
+      );
+      registerExecute(
+        "execute_carbon_recurring_strategy",
+        "Execute Carbon Recurring Strategy",
+        "Create and broadcast a recurring buy/sell Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeRecurringStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_concentrated_strategy",
+        "Execute Carbon Concentrated Strategy",
+        "Create and broadcast concentrated two-sided Carbon liquidity on Celo.",
+        (body) => ctx.carbonWrite.executeConcentratedStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_full_range_strategy",
+        "Execute Carbon Full Range Strategy",
+        "Create and broadcast full-range Carbon liquidity on Celo.",
+        (body) => ctx.carbonWrite.executeFullRangeStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_reprice_strategy",
+        "Execute Carbon Reprice",
+        "Update price ranges of an existing Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeRepriceStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_edit_strategy",
+        "Execute Carbon Edit Strategy",
+        "Edit prices and budgets of a Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeEditStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_deposit_budget",
+        "Execute Carbon Deposit",
+        "Add funds to a Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeDepositBudget(body),
+      );
+      registerExecute(
+        "execute_carbon_withdraw_budget",
+        "Execute Carbon Withdraw",
+        "Withdraw funds from a Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeWithdrawBudget(body),
+      );
+      registerExecute(
+        "execute_carbon_pause_strategy",
+        "Execute Carbon Pause",
+        "Pause a Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executePauseStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_resume_strategy",
+        "Execute Carbon Resume",
+        "Resume a paused Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeResumeStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_delete_strategy",
+        "Execute Carbon Delete",
+        "Permanently close a Carbon strategy on Celo.",
+        (body) => ctx.carbonWrite.executeDeleteStrategy(body),
+      );
+      registerExecute(
+        "execute_carbon_trade",
+        "Execute Carbon Trade",
+        "Execute a taker swap against Carbon liquidity on Celo.",
+        (body) => ctx.carbonWrite.executeTrade(body),
+      );
+      }
     },
   };
 }
 
-/** Default Carbon tools module (stdio MCP — includes prepare/write tools). */
+/** Default Carbon tools module (stdio MCP — prepare + execute). */
 export const carbonTools: ToolModule = createCarbonToolsModule({
-  writesEnabled: true,
+  prepareEnabled: true,
+  executeEnabled: true,
 });
