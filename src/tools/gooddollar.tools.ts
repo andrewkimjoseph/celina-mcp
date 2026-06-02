@@ -2,8 +2,9 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
 import type { ToolModule } from "./types.js";
-import { addressSchema } from "../schemas/common.js";
+import { optionalWalletAddressSchema } from "../schemas/common.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const gooddollarTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -12,17 +13,16 @@ export const gooddollarTools: ToolModule = {
       {
         title: "Get GoodDollar Whitelisting Info",
         description:
-          "Returns GoodDollar IdentityV4 whitelisting status for a wallet, including when it was whitelisted, last authentication date, and reverification progress.",
+          "Returns GoodDollar IdentityV4 whitelisting status for a wallet, including when it was whitelisted, last authentication date, and reverification progress. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ address }) => {
         try {
-          return ok(
-            await ctx.gooddollar.getWhitelistingInfo(address as `0x${string}`),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.gooddollar.getWhitelistingInfo(target));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
@@ -34,19 +34,16 @@ export const gooddollarTools: ToolModule = {
       {
         title: "Get GoodDollar UBI Entitlement",
         description:
-          "Returns daily GoodDollar UBI claim eligibility for a wallet: whitelist root, claimable G$ amount, already-claimed status, scheme state, and reasons when not eligible. Call before claim_daily_gooddollar_ubi.",
+          "Returns daily GoodDollar UBI claim eligibility for a wallet: whitelist root, claimable G$ amount, already-claimed status, scheme state, and reasons when not eligible. Call before claim_daily_gooddollar_ubi. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ address }) => {
         try {
-          return ok(
-            await ctx.gooddollar.getUbiClaimEligibility(
-              address as `0x${string}`,
-            ),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.gooddollar.getUbiClaimEligibility(target));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }

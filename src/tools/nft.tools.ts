@@ -1,9 +1,14 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
-import { addressSchema, tokenIdSchema } from "../schemas/common.js";
+import {
+  addressSchema,
+  optionalWalletAddressSchema,
+  tokenIdSchema,
+} from "../schemas/common.js";
 import type { ToolModule } from "./types.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const nftTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -38,20 +43,21 @@ export const nftTools: ToolModule = {
       {
         title: "Get NFT Balance",
         description:
-          "Returns NFT balance for an address. Token ID required for ERC-1155.",
+          "Returns NFT balance for an address. Token ID required for ERC-1155. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
           contractAddress: addressSchema,
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
           tokenId: tokenIdSchema.optional(),
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ contractAddress, address, tokenId }) => {
         try {
+          const target = resolveWalletAddress(ctx, address);
           return ok(
             await ctx.nft.getNftBalance(
               contractAddress as `0x${string}`,
-              address as `0x${string}`,
+              target,
               tokenId,
             ),
           );

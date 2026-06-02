@@ -1,9 +1,14 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
-import { addressSchema, paginationSchema } from "../schemas/common.js";
+import {
+  addressSchema,
+  optionalWalletAddressSchema,
+  paginationSchema,
+} from "../schemas/common.js";
 import type { ToolModule } from "./types.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const stakingTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -12,17 +17,16 @@ export const stakingTools: ToolModule = {
       {
         title: "Get Staking Balances",
         description:
-          "Returns active and pending staking votes for an address, broken down by validator group.",
+          "Returns active and pending staking votes for an address, broken down by validator group. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ address }) => {
         try {
-          return ok(
-            await ctx.staking.getStakingBalances(address as `0x${string}`),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.staking.getStakingBalances(target));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
@@ -34,17 +38,16 @@ export const stakingTools: ToolModule = {
       {
         title: "Get Activatable Stakes",
         description:
-          "Returns validator groups where pending stakes can be activated for an address.",
+          "Returns validator groups where pending stakes can be activated for an address. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ address }) => {
         try {
-          return ok(
-            await ctx.staking.getActivatableStakes(address as `0x${string}`),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.staking.getActivatableStakes(target));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }

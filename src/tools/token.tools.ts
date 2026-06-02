@@ -2,8 +2,12 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
 import type { ToolModule } from "./types.js";
-import { addressSchema, tokenSymbolSchema } from "../schemas/common.js";
+import {
+  optionalWalletAddressSchema,
+  tokenSymbolSchema,
+} from "../schemas/common.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const tokenTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -12,9 +16,9 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Celo Balances",
         description:
-          "Balances for named registry tokens on Celo mainnet. Default tokens: CELO + USDm. Pass tokens for specific symbols (USDC, WETH, EURm, …).",
+          "Balances for named registry tokens on Celo mainnet. Default tokens: CELO + USDm. Pass tokens for specific symbols (USDC, WETH, EURm, …). Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
           tokens: z
             .array(tokenSymbolSchema)
             .optional()
@@ -24,12 +28,8 @@ export const tokenTools: ToolModule = {
       },
       async ({ address, tokens }) => {
         try {
-          return ok(
-            await ctx.token.getBalances(
-              address as `0x${string}`,
-              tokens,
-            ),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.token.getBalances(target, tokens));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
@@ -41,9 +41,9 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Stablecoin Balances",
         description:
-          "Scan all registry stablecoins for an address in one call (Mento stables, USDC, USDT, GoodDollar, etc.). Omits zero balances by default.",
+          "Scan all registry stablecoins for an address in one call (Mento stables, USDC, USDT, GoodDollar, etc.). Omits zero balances by default. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
           stablecoins: z
             .array(z.string())
             .optional()
@@ -59,11 +59,12 @@ export const tokenTools: ToolModule = {
       },
       async ({ address, stablecoins, includeZero }) => {
         try {
+          const target = resolveWalletAddress(ctx, address);
           return ok(
-            await ctx.token.getStablecoinBalances(
-              address as `0x${string}`,
-              { stablecoins, includeZero },
-            ),
+            await ctx.token.getStablecoinBalances(target, {
+              stablecoins,
+              includeZero,
+            }),
           );
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
@@ -96,21 +97,17 @@ export const tokenTools: ToolModule = {
       {
         title: "Get Token Balance",
         description:
-          "Balance for one registry token. Pass a symbol (USDC, USDm, CELO, …) or a known registry contract address.",
+          "Balance for one registry token. Pass a symbol (USDC, USDm, CELO, …) or a known registry contract address. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
           token: tokenSymbolSchema,
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ token, address }) => {
         try {
-          return ok(
-            await ctx.token.getTokenBalance(
-              token,
-              address as `0x${string}`,
-            ),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.token.getTokenBalance(token, target));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
