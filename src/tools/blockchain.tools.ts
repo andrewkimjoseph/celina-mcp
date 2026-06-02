@@ -2,8 +2,12 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { AppContext } from "../context/app-context.js";
 import type { ToolModule } from "./types.js";
-import { addressSchema, blockIdSchema } from "../schemas/common.js";
+import {
+  blockIdSchema,
+  optionalWalletAddressSchema,
+} from "../schemas/common.js";
 import { err, ok } from "./helpers.js";
+import { resolveWalletAddress } from "./resolve-wallet.js";
 
 export const blockchainTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -95,20 +99,43 @@ export const blockchainTools: ToolModule = {
 export const accountTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
     server.registerTool(
+      "get_wallet_address",
+      {
+        title: "Get Wallet Address",
+        description:
+          "Returns the wallet address derived from CELO_PRIVATE_KEY in the server env. Use when you need the signer address explicitly; omit address on other tools to default to this wallet.",
+        inputSchema: z.object({}),
+        annotations: { readOnlyHint: true, idempotentHint: true },
+      },
+      async () => {
+        try {
+          const wallet_address = resolveWalletAddress(ctx);
+          return ok({
+            wallet_address,
+            has_wallet: true,
+            source: "CELO_PRIVATE_KEY",
+          });
+        } catch (error) {
+          return err(error instanceof Error ? error.message : String(error));
+        }
+      },
+    );
+
+    server.registerTool(
       "get_account",
       {
         title: "Get Account",
-        description: "Returns native CELO balance, nonce, and contract flag on mainnet.",
+        description:
+          "Returns native CELO balance, nonce, and contract flag on mainnet. Omit address to use the configured signer when CELO_PRIVATE_KEY is set.",
         inputSchema: z.object({
-          address: addressSchema,
+          address: optionalWalletAddressSchema,
         }),
         annotations: { readOnlyHint: true, idempotentHint: true },
       },
       async ({ address }) => {
         try {
-          return ok(
-            await ctx.account.getAccount(address as `0x${string}`),
-          );
+          const target = resolveWalletAddress(ctx, address);
+          return ok(await ctx.account.getAccount(target));
         } catch (error) {
           return err(error instanceof Error ? error.message : String(error));
         }
