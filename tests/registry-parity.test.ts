@@ -19,6 +19,7 @@ function collectRegisteredToolNames(): string[] {
   const patterns = [
     /registerTool\(\s*["'`]([^"'`]+)["'`]/g,
     /registerPrepare\(\s*["'`]([^"'`]+)["'`]/g,
+    /registerExecute\(\s*["'`]([^"'`]+)["'`]/g,
   ];
 
   for (const file of files) {
