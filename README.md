@@ -483,6 +483,7 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 - [x] Self proof verification (`verify_self_agent`, `verify_self_request`, `ai.self.xyz`)
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
 - [x] Carbon DeFi on Celo — 38 MCP tools (12 read + 13 prepare + 13 execute); see [celina-sdk carbon guide](../celina-sdk/docs/guides/carbon.md)
+- [ ] Cross-chain bridging — bridge tokens to/from Celo (`get_bridge_quote`, `estimate_bridge`, `execute_bridge`)
 
 ## Development
 
