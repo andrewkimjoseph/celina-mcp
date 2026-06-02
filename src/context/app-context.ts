@@ -6,6 +6,7 @@
  * via executePreparedFlow — unlike celina-agent where the user signs in-browser.
  */
 import { createCelinaClient } from "@andrewkimjoseph/celina-sdk";
+import { getMcpAnalyticsDeviceId } from "../analytics/install-device-id.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 import { TransactionService } from "../services/transaction.service.js";
 import { MentoFxService } from "../services/mento-fx.service.js";
@@ -87,6 +88,7 @@ export function createAppContext(
       typeof process !== "undefined"
         ? process.env.SELF_AGENT_API_BASE
         : undefined,
+    analyticsDeviceId: getMcpAnalyticsDeviceId(),
   });
 
   assertSdkServices(sdk);
