@@ -203,7 +203,7 @@ The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do
 
 **Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, and all **12 Carbon DeFi read tools** (see [Carbon DeFi](#carbon-defi-on-celo)), etc.
 
-**Hosted MCP:** `prepare_carbon_*` write tools are omitted server-side (`carbonWritesEnabled: false`). Use local stdio for unsigned strategy/trade preparation.
+**Hosted MCP:** **71 tools** — all reads, **`prepare_carbon_*`** (unsigned flows with approve + Carbon steps), and estimates. **`execute_carbon_*`** and server-key writes (`send_token`, `execute_mento_fx`, etc.) require **local stdio** with `CELO_PRIVATE_KEY`.
 
 **Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap` (require local `CELO_PRIVATE_KEY` via stdio).
 
@@ -228,7 +228,7 @@ Copy `.env.example` to `.env` for local development.
 
 ## Known tokens
 
-All supported tokens live in a single registry (`src/config/chains.ts`):
+All supported tokens live in the [`celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) token registry:
 
 | Category | Symbols |
 |----------|---------|
@@ -237,7 +237,7 @@ All supported tokens live in a single registry (`src/config/chains.ts`):
 | Bridged / third-party | `USDT`, `USDC`, `vEUR`, `vGBP`, `vCHF`, `USDM`, `USDA`, `EURA`, `USDGLO`, `BRLA`, `COPM` |
 | GoodDollar | `GoodDollar`, `G$` (`0x62B8B11039FcfE5aB0C56E502b1C372A3d2a9c7A`) |
 
-Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` map to `USDm` and `EURm`. You can also pass a known registry contract address.
+Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cEUR`, `cKES`, `PUSO`, `cREAL`, `eXOF`, etc.) map to the current `XXXm` names. You can also pass a known registry contract address.
 
 - `get_celo_balances` — named registry tokens (defaults to `CELO` + `USDm`)
 - `get_stablecoin_balances` — scan all registry stablecoins in one call (omits zero balances by default)
@@ -295,7 +295,7 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 
 ### Carbon DeFi on Celo
 
-25 tools for Carbon maker strategies and taker swaps on Celo mainnet (hybrid Carbon REST + `@bancor/carbon-sdk`). Read/simulate/help tools work on hosted MCP; `prepare_carbon_*` tools require **local stdio** (unsigned txs — user signs; no `CELO_PRIVATE_KEY` required for prepare).
+38 Carbon tools (12 read + 13 prepare + 13 execute) for Carbon maker strategies and taker swaps on Celo mainnet (hybrid Carbon REST + `@bancor/carbon-sdk`). Hosted MCP includes read + **`prepare_carbon_*`** (unsigned, full approve + Carbon steps via `finalizeCarbonPrepare`); **`execute_carbon_*`** requires **local stdio** with `CELO_PRIVATE_KEY`. Token symbols are normalized to `0x` addresses before Carbon REST.
 
 | Tool | Type | Description |
 |------|------|-------------|
@@ -324,10 +324,23 @@ Token symbols are resolved case-insensitively. Legacy aliases `cUSD` and `cEUR` 
 | `prepare_carbon_resume_strategy` | prepare* | Resume paused strategy (unsigned) |
 | `prepare_carbon_delete_strategy` | prepare* | Permanently close strategy (unsigned) |
 | `prepare_carbon_trade` | prepare* | Taker swap against Carbon liquidity (unsigned) |
+| `execute_carbon_limit_order` | write* | One-time limit order (local sign + broadcast) |
+| `execute_carbon_range_order` | write* | Range order (local sign + broadcast) |
+| `execute_carbon_recurring_strategy` | write* | Recurring buy/sell strategy (local sign + broadcast) |
+| `execute_carbon_concentrated_strategy` | write* | Concentrated two-sided liquidity (local sign + broadcast) |
+| `execute_carbon_full_range_strategy` | write* | Full-range liquidity (local sign + broadcast) |
+| `execute_carbon_reprice_strategy` | write* | Update price ranges (local sign + broadcast) |
+| `execute_carbon_edit_strategy` | write* | Edit prices and budgets (local sign + broadcast) |
+| `execute_carbon_deposit_budget` | write* | Add funds to strategy (local sign + broadcast) |
+| `execute_carbon_withdraw_budget` | write* | Withdraw funds (local sign + broadcast) |
+| `execute_carbon_pause_strategy` | write* | Pause strategy (local sign + broadcast) |
+| `execute_carbon_resume_strategy` | write* | Resume strategy (local sign + broadcast) |
+| `execute_carbon_delete_strategy` | write* | Close strategy (local sign + broadcast) |
+| `execute_carbon_trade` | write* | Taker swap (local sign + broadcast) |
 
-\* `prepare_carbon_*` omitted on hosted MCP (`carbonWritesEnabled: false`). Returns `preparedFlow` steps and API **`warnings`** — always surface warnings before the user signs. Prices are **quote per 1 base**; buy budget in quote, sell budget in base. Carbon API rate limit ~30 req/min — avoid burst parallel calls.
+\* **`execute_carbon_*`** omitted on hosted MCP (`carbonExecuteEnabled: false`). **`prepare_carbon_*`** returns full `preparedFlow` steps (approvals + Carbon tx) and API **`warnings`**. Execute requires `CELO_PRIVATE_KEY`. Prices are **quote per 1 base**; buy budget in quote, sell budget in base. Carbon API rate limit ~30 req/min — avoid burst parallel calls.
 
-Recommended flow: `get_carbon_strategies` → `explore_carbon_pair` / `get_carbon_trade_quote` → `simulate_carbon_strategy` (when sizing capital) → `prepare_carbon_*` → user signs in wallet.
+Recommended flow: `get_carbon_strategies` → `explore_carbon_pair` / `get_carbon_trade_quote` → `simulate_carbon_strategy` (when sizing capital) → **`execute_carbon_*`** (local MCP wallet) or `prepare_carbon_*` (external wallet signing).
 
 Details: [celina-sdk Carbon guide](../celina-sdk/docs/guides/carbon.md).
 
@@ -357,7 +370,7 @@ Daily G$ claims via UBISchemeV2 on Celo (`0x43d72Ff17701B2DA814620735C39C620Ce0e
 | `get_gooddollar_ubi_entitlement` | read | Claimable G$, whitelist root, eligibility reasons |
 | `claim_daily_gooddollar_ubi` | write | Claims for MCP server wallet (`CELO_PRIVATE_KEY`); stdio only |
 
-Recommended flow: `get_gooddollar_ubi_entitlement` → `claim_daily_gooddollar_ubi` (or use SDK `prepareClaimUbi` / Celeste AI `prepare_claim_daily_gooddollar_ubi` for user wallet signing).
+Recommended flow: `get_gooddollar_ubi_entitlement` → `claim_daily_gooddollar_ubi` (or use SDK `prepareClaimUbi` + wagmi for user wallet signing).
 
 Details: [celina-sdk GoodDollar guide](../celina-sdk/docs/guides/gooddollar.md).
 
@@ -408,8 +421,9 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 | Layer | Source | Examples |
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap quotes, GoodDollar whitelist/UBI, ENS, Carbon reads/simulate |
-| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi` |
-| Carbon prepare | celina-sdk `carbon.prepare*` | `prepare_carbon_*` — unsigned only; user signs (local stdio / SDK apps) |
+| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_carbon_*` |
+| Carbon prepare | celina-sdk `carbon.prepare*` | `prepare_carbon_*` — unsigned only; external wallet signing |
+| Carbon execute | celina-sdk `carbon.prepare*` + `buildExecutionSteps` + `executePreparedFlow` | `execute_carbon_*` — local `CELO_PRIVATE_KEY` |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 
 Mento FX routing uses `@mento-protocol/mento-sdk` transitively through celina-sdk — MCP does not import it directly.
@@ -453,7 +467,7 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 - [x] Aave lending tools (`supply_aave`, `withdraw_aave`) — USDT, WETH, USDm, USDC, CELO, EURm
 - [x] Self proof verification (`verify_self_agent`, `verify_self_request`, `ai.self.xyz`)
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
-- [x] Carbon DeFi on Celo — 25 tools (hybrid `@bancor/carbon-sdk` + Carbon REST); see [celina-sdk carbon guide](../celina-sdk/docs/guides/carbon.md)
+- [x] Carbon DeFi on Celo — 38 MCP tools (12 read + 13 prepare + 13 execute); see [celina-sdk carbon guide](../celina-sdk/docs/guides/carbon.md)
 
 ## Development
 
