@@ -7,6 +7,8 @@ import type { ToolModule } from "./types.js";
 import { err, ok } from "./helpers.js";
 
 const supportedTokens = AAVE_SUPPORTED_SYMBOLS.join(", ");
+const mentoLegacyAliases =
+  "cUSD, cEUR, cREAL, eXOF, cKES, PUSO, cCOP, cGBP, cCAD, cAUD, cZAR, cGHS, cNGN, cJPY, cCHF";
 
 export const aaveTools: ToolModule = {
   register(server: McpServer, ctx: AppContext) {
@@ -18,7 +20,7 @@ export const aaveTools: ToolModule = {
           `Supply (lend) tokens to Aave V3 on Celo mainnet. Supported: ${supportedTokens}. Deposits the underlying token and receives interest-bearing aTokens. Sends ERC-20 approval first if needed. CELO requires wrapped CELO (ERC-20), not native CELO. Requires CELO_PRIVATE_KEY in MCP server env.`,
         inputSchema: z.object({
           token: tokenSymbolSchema.describe(
-            `Token to supply (${supportedTokens}; aliases cUSD/cEUR accepted)`,
+            `Token to supply (${supportedTokens}; Mento legacy aliases: ${mentoLegacyAliases})`,
           ),
           amount: z.string().describe("Human-readable token amount, e.g. 100"),
         }),
@@ -44,7 +46,7 @@ export const aaveTools: ToolModule = {
           `Withdraw tokens from Aave V3 on Celo mainnet by redeeming aTokens. Supported: ${supportedTokens}. Requires CELO_PRIVATE_KEY in MCP server env.`,
         inputSchema: z.object({
           token: tokenSymbolSchema.describe(
-            `Token to withdraw (${supportedTokens}; aliases cUSD/cEUR accepted)`,
+            `Token to withdraw (${supportedTokens}; Mento legacy aliases: ${mentoLegacyAliases})`,
           ),
           amount: z
             .string()

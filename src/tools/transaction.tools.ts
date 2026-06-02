@@ -36,7 +36,7 @@ export const transactionTools: ToolModule = {
       {
         title: "Send Token",
         description:
-          "Send CELO or an ERC-20 token on mainnet. Accepts a 0x address or ENS name as recipient. Requires CELO_PRIVATE_KEY in MCP server env.",
+          "Send CELO or an ERC-20 token on mainnet. CELO uses GoldToken ERC-20 transfer (token duality). Accepts a 0x address or ENS name as recipient. Requires CELO_PRIVATE_KEY in MCP server env.",
         inputSchema: z.object({
           to: addressOrEnsSchema,
           token: tokenSymbolSchema.default("CELO"),

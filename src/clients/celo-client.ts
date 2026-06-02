@@ -2,12 +2,15 @@ import {
   createPublicClient,
   createWalletClient,
   http,
+  type Chain,
   type PublicClient,
   type WalletClient,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { AppConfig } from "../config/env.js";
-import { CHAIN, DEFAULT_RPC_URL } from "../config/chains.js";
+import { CHAIN, DEFAULT_RPC_URL } from "@andrewkimjoseph/celina-sdk";
+
+const chain = CHAIN as Chain;
 
 export interface CeloClients {
   public: PublicClient;
@@ -28,7 +31,7 @@ export class CeloClientFactory {
     const rpcUrl = this.config.rpcUrl ?? DEFAULT_RPC_URL;
     const transport = http(rpcUrl);
     const publicClient = createPublicClient({
-      chain: CHAIN,
+      chain,
       transport,
     }) as PublicClient;
 
@@ -40,7 +43,7 @@ export class CeloClientFactory {
       accountAddress = account.address;
       wallet = createWalletClient({
         account,
-        chain: CHAIN,
+        chain,
         transport,
       });
     }
