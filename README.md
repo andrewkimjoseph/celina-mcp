@@ -1,9 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/logo-yellow.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/logo-black.png">
-    <img src="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/logo-black.png" alt="Celina logo — C with profile silhouette" width="160">
-  </picture>
+  <img src="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/celina-banner.png" alt="Celina — Give your LLM a wallet on Celo">
 </p>
 
 <h1 align="center">Celina — Celo MCP Server</h1>
