@@ -405,7 +405,9 @@ authenticated_self_fetch
 
 ## Adding a new tool
 
-1. Create `src/tools/my-feature.tools.ts` implementing `ToolModule`:
+1. Add a tool definition in **celina-sdk** `src/tools/domains/` (see `@andrewkimjoseph/celina-sdk/tools`). MCP registers via `registerSdkTools` in `src/tools/sdk-register.ts`.
+
+Legacy pattern (removed): create `src/tools/my-feature.tools.ts` implementing `ToolModule`:
 
 ```typescript
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
