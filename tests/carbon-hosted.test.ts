@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createCarbonToolsModule } from "../src/tools/carbon.tools.js";
+import {
+  ALL_TOOL_DEFINITIONS,
+  filterToolDefinitions,
+} from "@andrewkimjoseph/celina-sdk/tools";
 import { resolveCarbonToolsOptions } from "../src/tools/carbon-options.js";
 
 describe("resolveCarbonToolsOptions", () => {
@@ -35,22 +38,21 @@ describe("resolveCarbonToolsOptions", () => {
 });
 
 describe("Carbon hosted mode", () => {
-  function registeredToolNames(
-    options: Parameters<typeof createCarbonToolsModule>[0],
+  function carbonToolNames(
+    options: ReturnType<typeof resolveCarbonToolsOptions>,
   ): string[] {
-    const names: string[] = [];
-    const server = {
-      registerTool: (name: string) => {
-        names.push(name);
+    return filterToolDefinitions(
+      ALL_TOOL_DEFINITIONS.filter((d) => d.name.includes("carbon")),
+      {
+        surface: "mcp",
+        carbonPrepareEnabled: options.prepareEnabled,
+        carbonExecuteEnabled: options.executeEnabled,
       },
-    } as never;
-
-    createCarbonToolsModule(options).register(server, {} as never);
-    return names;
+    ).map((d) => d.name);
   }
 
   it("hosted: 12 read + 13 prepare, no execute", () => {
-    const names = registeredToolNames({
+    const names = carbonToolNames({
       prepareEnabled: true,
       executeEnabled: false,
     });
@@ -67,7 +69,10 @@ describe("Carbon hosted mode", () => {
   });
 
   it("legacy read-only: 12 read only", () => {
-    const names = registeredToolNames({ writesEnabled: false });
+    const names = carbonToolNames({
+      prepareEnabled: false,
+      executeEnabled: false,
+    });
 
     expect(names.some((n) => n.startsWith("prepare_carbon_"))).toBe(false);
     expect(names.some((n) => n.startsWith("execute_carbon_"))).toBe(false);
@@ -76,7 +81,7 @@ describe("Carbon hosted mode", () => {
   });
 
   it("stdio: 12 read + 13 prepare + 13 execute", () => {
-    const names = registeredToolNames({
+    const names = carbonToolNames({
       prepareEnabled: true,
       executeEnabled: true,
     });
