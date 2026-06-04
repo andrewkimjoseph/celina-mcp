@@ -40,6 +40,8 @@ function assertSdkServices(
 }
 
 export interface AppContext {
+  /** Full Celina SDK client (reads + prepare*). */
+  sdk: ReturnType<typeof createCelinaClient>;
   /** Whether `CELO_PRIVATE_KEY` is configured for server-side signing. */
   config: {
     hasWallet: boolean;
@@ -94,6 +96,7 @@ export function createAppContext(
   assertSdkServices(sdk);
 
   return {
+    sdk,
     config: {
       hasWallet: Boolean(walletAddress),
       walletAddress,

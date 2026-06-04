@@ -1,64 +1,15 @@
-/** Central tool registry — append new ToolModule exports here. */
+/** Central tool registry — SDK tool definitions via registerSdkTools. */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { AppContext } from "../context/app-context.js";
-import type { ToolModule } from "./types.js";
-import { accountTools, blockchainTools } from "./blockchain.tools.js";
-import { contractTools } from "./contract.tools.js";
-import { gooddollarTools } from "./gooddollar.tools.js";
-import { governanceTools } from "./governance.tools.js";
-import { nftTools } from "./nft.tools.js";
-import { selfTools } from "./self.tools.js";
-import { stakingTools } from "./staking.tools.js";
-import { tokenTools } from "./token.tools.js";
-import { transactionTools } from "./transaction.tools.js";
-import { mentoFxTools } from "./mento-fx.tools.js";
-import { uniswapTools } from "./uniswap.tools.js";
-import { aaveTools } from "./aave.tools.js";
-import { ensTools } from "./ens.tools.js";
-import { createCarbonToolsModule } from "./carbon.tools.js";
-import { resolveCarbonToolsOptions } from "./carbon-options.js";
+import { registerSdkTools, type RegisterToolsOptions } from "./sdk-register.js";
 
-export type RegisterToolsOptions = {
-  carbonExecuteEnabled?: boolean;
-  carbonPrepareEnabled?: boolean;
-  /** @deprecated Use carbonExecuteEnabled + carbonPrepareEnabled */
-  carbonWritesEnabled?: boolean;
-};
+export type { RegisterToolsOptions };
 
-export const toolModules: ToolModule[] = [
-  blockchainTools,
-  accountTools,
-  ensTools,
-  tokenTools,
-  transactionTools,
-  mentoFxTools,
-  uniswapTools,
-  aaveTools,
-  gooddollarTools,
-  governanceTools,
-  stakingTools,
-  nftTools,
-  contractTools,
-  selfTools,
-];
-
-/** Register every domain tool module on the MCP server. */
+/** Register every Celina tool on the MCP server from @andrewkimjoseph/celina-sdk/tools. */
 export function registerAllTools(
   server: McpServer,
   ctx: AppContext,
   options: RegisterToolsOptions = {},
 ): void {
-  for (const module of toolModules) {
-    module.register(server, ctx);
-  }
-
-  createCarbonToolsModule(
-    resolveCarbonToolsOptions({
-      prepareEnabled: options.carbonPrepareEnabled,
-      executeEnabled: options.carbonExecuteEnabled,
-      ...(options.carbonWritesEnabled === false
-        ? { writesEnabled: false }
-        : {}),
-    }),
-  ).register(server, ctx);
+  registerSdkTools(server, ctx, options);
 }
