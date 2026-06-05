@@ -67,7 +67,7 @@ Celo is mobile-first, stablecoin-rich, and increasingly agent-shaped—but LLMs 
 **Capabilities:**
 
 - **Reads:** balances, blocks, txs, ENS, governance, staking, NFTs, contract calls (caller-supplied ABI), GoodDollar whitelist/UBI eligibility, Carbon DeFi exploration, and more
-- **Prepare:** returns `SerializedPreparedFlow` — ordered unsigned steps for **wagmi** / viem `sendTransaction`
+- **Prepare:** returns `SerializedPreparedFlow` — ordered unsigned steps for **wagmi** `sendTransactionAsync` / viem `walletClient.sendTransaction`
 - **Attribution:** every calldata step gets a **CELINA suffix** (`appendCelinaCalldataTag`) so on-chain activity can be attributed consistently (sends, Mento, Uniswap, Aave, GoodDollar, Carbon controller txs)
 
 **Install:**
@@ -93,7 +93,7 @@ const flow = await celina.transaction.prepareSend(
   "USDm",
   "10"
 );
-// flow.steps → wagmi sendTransaction (user signs in wallet)
+// flow.steps → wagmi sendTransactionAsync (user signs in wallet)
 ```
 
 **Docs:** [GitBook — Celina SDK](https://andrewkimjoseph.gitbook.io/celina-sdk)  
