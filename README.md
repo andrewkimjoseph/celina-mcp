@@ -5,7 +5,7 @@
 <h1 align="center">Celina — Celo MCP Server</h1>
 
 <p align="center">
-  <strong>Celina</strong> is an open-source <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server that gives LLMs read + write access to <strong>Celo mainnet</strong> — balances, stablecoins, sends, Mento FX, Uniswap v4, Aave, <a href="#carbon-defi-on-celo">Carbon DeFi</a> maker/taker tools, and chain reads.
+  <strong>Celina</strong> is an open-source <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server for <strong>Celo mainnet</strong>. It registers the shared <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk"><code>@andrewkimjoseph/celina-sdk/tools</code></a> catalog — the same Zod schemas and handlers that power browser wallet apps — so MCP and agent hosts stay in sync without duplicate tool definitions.
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
   ·
   <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp">npm</a>
   ·
-  <a href="https://mcp.usecelina.xyz/api/mcp">Hosted (read-only)</a>
+  <a href="https://mcp.usecelina.xyz/api/mcp">Hosted (reads + prepare)</a>
 </p>
 
 ## Install
@@ -28,11 +28,11 @@ If you still use `@andrewkimjoseph/celina`, update your MCP config `args` to `@a
 
 ## Quick start
 
-**Recommended:** install locally and connect over stdio — full tool support (including writes with your own keys), no cold starts, and keys stay on your machine.
+**Recommended:** install locally and connect over stdio — full tool catalog with execute/write when you set `CELO_PRIVATE_KEY`, no cold starts, and keys stay on your machine.
 
-Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) spawns Celina as a child process via `npx`. See [Local stdio (recommended)](#local-stdio-recommended).
+Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) spawns Celina as a child process via `npx`. Tools register from `@andrewkimjoseph/celina-sdk/tools` via `registerSdkTools`. See [Local stdio (recommended)](#local-stdio-recommended).
 
-For read-only chain queries without a local install, a hosted endpoint is available at [https://mcp.usecelina.xyz/api/mcp](https://mcp.usecelina.xyz/api/mcp) — see [Hosted (read-only)](#hosted-read-only).
+For chain reads and unsigned Carbon prepares without a local install, use the hosted Streamable HTTP endpoint at [https://mcp.usecelina.xyz/api/mcp](https://mcp.usecelina.xyz/api/mcp) — see [Hosted (reads + prepare)](#hosted-reads--prepare).
 
 ## MCP setup
 
@@ -179,13 +179,13 @@ npm run inspect
 - Start with read-only prompts, e.g. *"What's the USDm balance of 0x…?"*, *"Is this wallet GoodDollar whitelisted?"*, or *"Can this address claim GoodDollar UBI today?"*
 - Keep private keys in env vars only — never commit them to config files in git.
 
-## Hosted (read-only)
+## Hosted (reads + prepare)
 
-A public read-only endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (alias: `/mcp`). Use this when you only need chain reads and don't want a local `npx` install.
+A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (alias: `/mcp`). Use this when you need chain reads and unsigned `prepare_carbon_*` flows without a local `npx` install.
 
 **Local stdio remains the recommended setup** — it supports write tools with your own keys, Self Agent ID flows, and avoids serverless cold starts.
 
-**Client config (read-only, no local install):**
+**Client config (hosted, no local install):**
 
 ```json
 {
@@ -225,7 +225,7 @@ Wallet-scoped tools with optional address: `get_account`, token balance tools, s
 
 On **hosted** MCP (no key), pass explicit addresses. `get_wallet_address` returns an error without a configured key.
 
-Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) instead pass the user’s connected wallet on each call — see [MCP session wallet guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/mcp-session-wallet.md). **Celeste AI** is a separate app that uses the SDK + wagmi only (not this MCP server).
+Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) filter the same tool catalog with `surface: "browser"` and pass the user’s connected wallet on each call — see [tool catalog guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md) and [MCP session wallet guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/mcp-session-wallet.md).
 
 ## Environment variables
 
@@ -405,27 +405,12 @@ authenticated_self_fetch
 
 ## Adding a new tool
 
-1. Add a tool definition in **celina-sdk** `src/tools/domains/` (see `@andrewkimjoseph/celina-sdk/tools`). MCP registers via `registerSdkTools` in `src/tools/sdk-register.ts`.
+1. Add a `ToolDefinition` in **celina-sdk** `src/tools/domains/` and export it from `ALL_TOOL_DEFINITIONS` (see [`@andrewkimjoseph/celina-sdk/tools`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md)).
+2. MCP picks it up automatically via `registerSdkTools` in `src/tools/sdk-register.ts` — no per-tool MCP file required.
+3. Add domain logic in celina-sdk services if the handler needs new client methods.
+4. Rebuild both packages: `npm run build` in celina-sdk, then celina-mcp.
 
-Legacy pattern (removed): create `src/tools/my-feature.tools.ts` implementing `ToolModule`:
-
-```typescript
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { AppContext } from "../context/app-context.js";
-import type { ToolModule } from "./types.js";
-
-export const myFeatureTools: ToolModule = {
-  register(server, ctx) {
-    server.registerTool("my_tool", { /* ... */ }, async (args) => { /* ... */ });
-  },
-};
-```
-
-2. Append to `toolModules` in `src/tools/index.ts`.
-3. Add domain logic in `src/services/` if needed.
-4. Rebuild: `npm run build`.
-
-No changes to `src/index.ts` or server bootstrap required.
+Set `surfaces` on the definition (`"mcp"`, `"browser"`, or both) and use `filterToolDefinitions` options (`carbonPrepareEnabled`, `carbonExecuteEnabled`) to control hosted vs stdio exposure.
 
 ## For developers
 
@@ -451,14 +436,12 @@ Self Agent ID is implemented in [`@andrewkimjoseph/celina-sdk`](https://www.npmj
 |------|---------|
 | `src/index.ts` | stdio MCP bootstrap — loads env, connects transport |
 | `src/server/` | `createServer()` factory and LLM instructions |
-| `src/context/` | Composes SDK read services + SDK prepare* write executors |
-| `src/tools/` | One file per domain; all registered in `src/tools/index.ts` |
-| `src/services/` | Wallet executor (`execute-prepared-flow.ts`) |
+| `src/context/` | Composes SDK client + MCP runtime (wallet, executors, hooks) |
+| `src/tools/` | `registerSdkTools` — registers filtered `ALL_TOOL_DEFINITIONS` from celina-sdk |
+| `src/services/` | Wallet executor (`execute-prepared-flow.ts`) for signed broadcasts |
 | `src/config/` | Env, token registry, Self constants |
 
-### Tool module pattern
-
-Each tool file exports a `ToolModule` with `register(server, ctx)`. See [Adding a new tool](#adding-a-new-tool) above — append new modules to `toolModules` in `src/tools/index.ts`.
+Tool schemas, descriptions, and handlers live in **celina-sdk** `src/tools/domains/`. MCP only wires them to `@modelcontextprotocol/sdk` — see [Adding a new tool](#adding-a-new-tool).
 
 ### Local development
 
