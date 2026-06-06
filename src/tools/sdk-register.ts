@@ -93,6 +93,16 @@ function createMcpRuntime(ctx: AppContext): ToolRuntime {
       },
       gooddollarWrite: {
         claimDailyUbi: () => ctx.gooddollarWrite.claimDailyUbi(),
+        estimateReserveSwap: (tokenIn, tokenOut, amount, options) =>
+          ctx.gooddollarWrite.estimateReserveSwap(tokenIn, tokenOut, amount, {
+            recipient: options?.recipient,
+            slippageTolerance: options?.slippageTolerance,
+          }),
+        executeReserveSwap: (tokenIn, tokenOut, amount, options) =>
+          ctx.gooddollarWrite.executeReserveSwap(tokenIn, tokenOut, amount, {
+            recipient: options?.recipient,
+            slippageTolerance: options?.slippageTolerance,
+          }),
       },
       self: {
         verifyAgent: (args) =>

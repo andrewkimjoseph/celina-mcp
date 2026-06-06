@@ -1,6 +1,7 @@
 import {
   GOODDOLLAR_UBI_SCHEME_ADDRESS,
   type createCelinaClient,
+  type GoodDollarReserveSwapParams,
 } from "@andrewkimjoseph/celina-sdk";
 import { decodeEventLog, formatUnits } from "viem";
 import type { CeloClientFactory } from "../clients/celo-client.js";
@@ -66,6 +67,54 @@ export class GoodDollarWriteService {
       claimableAmountFormatted: eligibility.claimableAmountFormatted,
       amountClaimed,
       amountClaimedFormatted,
+    };
+  }
+
+  estimateReserveSwap(
+    tokenIn: string,
+    tokenOut: string,
+    amount: string,
+    params?: GoodDollarReserveSwapParams,
+  ) {
+    const { accountAddress: from } = requireWalletClients(
+      this.clientFactory.getClients(),
+    );
+    return this.sdk.gooddollar.estimateReserveSwap(
+      from,
+      tokenIn,
+      tokenOut,
+      amount,
+      params,
+    );
+  }
+
+  async executeReserveSwap(
+    tokenIn: string,
+    tokenOut: string,
+    amount: string,
+    params?: GoodDollarReserveSwapParams,
+  ) {
+    const clients = requireWalletClients(this.clientFactory.getClients());
+    const { accountAddress: from } = clients;
+
+    const [prepared, estimate] = await Promise.all([
+      this.sdk.gooddollar.prepareReserveSwap(from, tokenIn, tokenOut, amount, params),
+      this.sdk.gooddollar.estimateReserveSwap(from, tokenIn, tokenOut, amount, params),
+    ]);
+
+    const { stepHashes, hash, status } = await executePreparedFlow(
+      clients,
+      prepared.steps,
+    );
+
+    const approvalHash =
+      stepHashes.length > 1 ? stepHashes[0] : undefined;
+
+    return {
+      ...estimate,
+      approvalHash,
+      hash,
+      status,
     };
   }
 }

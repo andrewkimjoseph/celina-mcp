@@ -167,7 +167,7 @@ npm i @andrewkimjoseph/celina-mcp@latest
 }
 ```
 
-**Hosted surface (~73 tools):**
+**Hosted surface (~75 tools):**
 
 - All **`get_*`** reads, ENS, governance, staking, NFTs, contract reads
 - Mento / Uniswap **quotes** (not executes)
@@ -177,7 +177,7 @@ npm i @andrewkimjoseph/celina-mcp@latest
 
 **Intentionally disabled on hosted (no server keys):**
 
-- `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, Aave supply/withdraw, `claim_daily_gooddollar_ubi`
+- `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, Aave supply/withdraw, `claim_daily_gooddollar_ubi`
 - All **`execute_carbon_*`**
 - `get_wallet_address`
 - Self registration sessions are **unreliable** on stateless serverless (in-memory session TTL)
@@ -201,7 +201,7 @@ npm i @andrewkimjoseph/celina-mcp@latest
 | Route | Best for | MCP flow |
 |-------|----------|----------|
 | **Mento FX** | Oracle-priced Mento assets (USDm, EURm, CELO, …) | `get_mento_fx_quote` → `estimate_mento_fx` → `execute_mento_fx` |
-| **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` (quote only; prepare via SDK/wallet) |
+| **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` → `estimate_gooddollar_reserve_swap` → `execute_gooddollar_reserve_swap` (stdio) |
 | **Uniswap v4** | AMM pairs (e.g. G$ → USDT) | `get_uniswap_quote` → `estimate_uniswap_swap` → `execute_uniswap_swap` |
 | **Aave V3 on Celo** | Supply / withdraw | `supply_aave`, `withdraw_aave` |
 
@@ -220,7 +220,7 @@ Recommended agent flow: `get_carbon_strategies` → explore/quote → `simulate_
 ### GoodDollar
 
 - Read whitelist status and daily entitlement
-- **G$ ↔ USDm reserve quote** on hosted MCP (`get_gooddollar_reserve_quote`); unsigned prepare via SDK/wallet apps
+- **G$ ↔ USDm reserve quote** on hosted MCP (`get_gooddollar_reserve_quote`); estimate/execute on stdio with `CELO_PRIVATE_KEY`
 - MCP: `claim_daily_gooddollar_ubi` with server wallet (stdio)
 - Apps: `prepareClaimUbi`, `prepareReserveSwap`, or `prepare_swap` + wagmi for **user wallet** signing (one UBI claim per verified identity per day)
 

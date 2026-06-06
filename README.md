@@ -201,9 +201,9 @@ The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do
 
 **Works without keys:** all `get_*` tools, `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `get_gooddollar_reserve_quote`, `estimate_transaction`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, and all **12 Carbon DeFi read tools** (see [Carbon DeFi](#carbon-defi-on-celo)), etc.
 
-**Hosted MCP:** **73 tools** — all reads, **`prepare_carbon_*`** (unsigned flows with approve + Carbon steps), and estimates. **`execute_carbon_*`** and server-key writes (`send_token`, `execute_mento_fx`, etc.) require **local stdio** with `CELO_PRIVATE_KEY`.
+**Hosted MCP:** **75 tools** — all reads, **`prepare_carbon_*`** (unsigned flows with approve + Carbon steps), and estimates. **`execute_carbon_*`** and server-key writes (`send_token`, `execute_mento_fx`, `execute_gooddollar_reserve_swap`, etc.) require **local stdio** with `CELO_PRIVATE_KEY`.
 
-**Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap` (require local `CELO_PRIVATE_KEY` via stdio).
+**Fails gracefully:** `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `estimate_send`, `estimate_mento_fx`, `estimate_uniswap_swap`, `estimate_gooddollar_reserve_swap` (require local `CELO_PRIVATE_KEY` via stdio).
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -211,7 +211,7 @@ See [celina-mcp-host/README.md](../celina-mcp-host/README.md) if you want to dep
 
 ## Write tools
 
-Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
+Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
 
 ## Session wallet (local stdio)
 
@@ -284,6 +284,8 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 | `get_gooddollar_whitelisting_info` | read | GoodDollar IdentityV4 whitelist status |
 | `get_gooddollar_ubi_entitlement` | read | Daily UBI claim eligibility (amount, whitelist root, reasons) |
 | `get_gooddollar_reserve_quote` | read | G$ ↔ USDm quote via GoodDollar MentoBroker reserve (bonding curve) |
+| `estimate_gooddollar_reserve_swap` | read* | Reserve swap gas estimate (*needs `CELO_PRIVATE_KEY`) |
+| `execute_gooddollar_reserve_swap` | write | Execute G$ ↔ USDm reserve swap via MentoBroker |
 | `claim_daily_gooddollar_ubi` | write | Claim today's GoodDollar UBI (G$) for the MCP server wallet |
 | `get_governance_proposals` | read | Celo governance proposals (paginated) |
 | `get_proposal_details` | read | Governance proposal details + CGP content |
@@ -365,7 +367,7 @@ Three swap routes are available. Pick based on the token pair:
 | Route | Best for | Quote tool | Execute (MCP) |
 |-------|----------|------------|---------------|
 | **Mento FX** | Mento oracle stables (USDm, EURm, CELO, …) | `get_mento_fx_quote` | `estimate_mento_fx` → `execute_mento_fx` |
-| **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` | — (browser/SDK prepare only) |
+| **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` | `estimate_gooddollar_reserve_swap` → `execute_gooddollar_reserve_swap` |
 | **Uniswap v4** | AMM pairs (e.g. G$ → USDT, USDC → USDT) | `get_uniswap_quote` | `estimate_uniswap_swap` → `execute_uniswap_swap` |
 
 **G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap (pools are typically illiquid). **G$ → USDT** and similar AMM pairs use Uniswap when Mento FX has no route. CELO swaps on Uniswap route through WCELO pools — the signer needs WCELO (wrapped CELO) balance, not native CELO. All on-chain steps include the CELINA attribution tag.
@@ -388,11 +390,13 @@ Recommended flow: `get_gooddollar_ubi_entitlement` → `claim_daily_gooddollar_u
 
 #### Reserve swaps (G$ ↔ USDm)
 
-On-chain **MentoBroker** bonding curve — the canonical route for GoodDollar ↔ USDm. MCP can **quote**; unsigned prepare is **browser/SDK only** (`prepare_gooddollar_reserve_swap` or aggregated `prepare_swap`).
+On-chain **MentoBroker** bonding curve — the canonical route for GoodDollar ↔ USDm. MCP can **quote**, **estimate**, and **execute** on stdio with `CELO_PRIVATE_KEY`. Browser apps use `prepare_gooddollar_reserve_swap` or `prepare_swap`.
 
 | Tool | Type | Notes |
 |------|------|-------|
 | `get_gooddollar_reserve_quote` | read | Hosted + stdio; pair-limited to G$ ↔ USDm |
+| `estimate_gooddollar_reserve_swap` | read* | Gas estimate (*needs `CELO_PRIVATE_KEY`) |
+| `execute_gooddollar_reserve_swap` | write | Stdio only; signs approve + broker `swapIn` |
 
 Details: [celina-sdk GoodDollar guide](../celina-sdk/docs/guides/gooddollar.md).
 
@@ -430,7 +434,7 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 | Layer | Source | Examples |
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap/reserve quotes, GoodDollar whitelist/UBI/reserve, ENS, Carbon reads/simulate |
-| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_carbon_*` |
+| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_carbon_*` |
 | Carbon prepare | celina-sdk `carbon.prepare*` | `prepare_carbon_*` — unsigned only; external wallet signing |
 | Carbon execute | celina-sdk `carbon.prepare*` + `buildExecutionSteps` + `executePreparedFlow` | `execute_carbon_*` — local `CELO_PRIVATE_KEY` |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
