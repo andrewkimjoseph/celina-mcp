@@ -35,7 +35,7 @@ Celo is mobile-first, stablecoin-rich, and increasingly agent-shaped—but LLMs 
 
 - A consistent **token registry** (USDm, EURm, CELO, GoodDollar, bridged stables, etc.)
 - Safe **read → quote → estimate → prepare → sign** patterns
-- First-class coverage of **Celo-native DeFi** (Mento FX, Uniswap v4 on Celo, Aave V3, Carbon DeFi, GoodDollar UBI, governance, staking)
+- First-class coverage of **Celo-native DeFi** (Mento FX, GoodDollar reserve, Uniswap v4 on Celo, Aave V3, Carbon DeFi, GoodDollar UBI, governance, staking)
 - A standard way to plug into **MCP** clients without every team re-wiring viem calls
 
 **Celina** ("Celo" + agent tooling) is Canvassing Intelligence's answer: one TypeScript SDK, one MCP server, and one hosted endpoint so you can start in an IDE in minutes or embed the SDK in a product with wagmi.
@@ -66,7 +66,7 @@ Celo is mobile-first, stablecoin-rich, and increasingly agent-shaped—but LLMs 
 
 **Capabilities:**
 
-- **Reads:** balances, blocks, txs, ENS, governance, staking, NFTs, contract calls (caller-supplied ABI), GoodDollar whitelist/UBI eligibility, Carbon DeFi exploration, and more
+- **Reads:** balances, blocks, txs, ENS, governance, staking, NFTs, contract calls (caller-supplied ABI), GoodDollar whitelist/UBI/reserve quotes, Carbon DeFi exploration, and more
 - **Prepare:** returns `SerializedPreparedFlow` — ordered unsigned steps for **wagmi** `sendTransactionAsync` / viem `walletClient.sendTransaction`
 - **Attribution:** every calldata step gets a **CELINA suffix** (`appendCelinaCalldataTag`) so on-chain activity can be attributed consistently (sends, Mento, Uniswap, Aave, GoodDollar, Carbon controller txs)
 
@@ -167,11 +167,11 @@ npm i @andrewkimjoseph/celina-mcp@latest
 }
 ```
 
-**Hosted surface (~72 tools):**
+**Hosted surface (~73 tools):**
 
 - All **`get_*`** reads, ENS, governance, staking, NFTs, contract reads
 - Mento / Uniswap **quotes** (not executes)
-- GoodDollar whitelist + UBI **entitlement** reads
+- GoodDollar whitelist + UBI **entitlement** reads + **G$ ↔ USDm reserve quote** (`get_gooddollar_reserve_quote`)
 - Carbon **12 read tools** + **13 `prepare_carbon_*`** (full unsigned flows including approvals)
 - Self **verify / lookup** reads
 
@@ -201,10 +201,11 @@ npm i @andrewkimjoseph/celina-mcp@latest
 | Route | Best for | MCP flow |
 |-------|----------|----------|
 | **Mento FX** | Oracle-priced Mento assets (USDm, EURm, CELO, …) | `get_mento_fx_quote` → `estimate_mento_fx` → `execute_mento_fx` |
+| **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` (quote only; prepare via SDK/wallet) |
 | **Uniswap v4** | AMM pairs (e.g. G$ → USDT) | `get_uniswap_quote` → `estimate_uniswap_swap` → `execute_uniswap_swap` |
 | **Aave V3 on Celo** | Supply / withdraw | `supply_aave`, `withdraw_aave` |
 
-CELO swaps on Uniswap route through **WCELO**; the signer needs wrapped CELO balance for those pools.
+**G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap. CELO swaps on Uniswap route through **WCELO**; the signer needs wrapped CELO balance for those pools.
 
 ### Carbon DeFi on Celo (38 MCP tools)
 
@@ -216,11 +217,12 @@ Hybrid **Carbon REST** + `@bancor/carbon-sdk` for maker strategies and taker swa
 
 Recommended agent flow: `get_carbon_strategies` → explore/quote → `simulate_carbon_strategy` → prepare or execute; always surface **`warnings`** from prepare/execute responses.
 
-### GoodDollar UBI
+### GoodDollar
 
 - Read whitelist status and daily entitlement
+- **G$ ↔ USDm reserve quote** on hosted MCP (`get_gooddollar_reserve_quote`); unsigned prepare via SDK/wallet apps
 - MCP: `claim_daily_gooddollar_ubi` with server wallet (stdio)
-- Apps: `prepareClaimUbi` + wagmi for **user wallet** signing (one claim per verified identity per day)
+- Apps: `prepareClaimUbi`, `prepareReserveSwap`, or `prepare_swap` + wagmi for **user wallet** signing (one UBI claim per verified identity per day)
 
 ### Self Agent ID ([ai.self.xyz](https://ai.self.xyz) on Celo mainnet)
 
@@ -251,7 +253,7 @@ Recommended agent flow: `get_carbon_strategies` → explore/quote → `simulate_
 The ecosystem also has the official **[Celo MCP from celo-org](https://docs.celo.org/build-on-celo/build-with-ai/mcp/celo-mcp)** (Python, broad blockchain access). **Celina** is **unofficial**, **TypeScript-native**, and **mainnet-focused**:
 
 - Prepared flows + wagmi integration
-- Deep integrations: **Mento, Uniswap v4, Aave, Carbon, GoodDollar, Self Agent ID**
+- Deep integrations: **Mento, GoodDollar reserve, Uniswap v4, Aave, Carbon, GoodDollar UBI, Self Agent ID**
 - A **hosted MCP** endpoint for zero-install reads and Carbon prepare
 
 They can coexist in different clients; pick based on language, deployment model, and DeFi coverage.
@@ -307,10 +309,10 @@ Live dashboard: **[usecelina.xyz/stats](https://usecelina.xyz/stats)** — on-ch
 
 **Shipped:**
 
-- Mento FX, Uniswap v4, Aave V3 on Celo
+- Mento FX, GoodDollar reserve, Uniswap v4, Aave V3 on Celo
 - Self proof verification + Agent ID lifecycle tools
 - Carbon DeFi — 25 SDK operations / 38 MCP tools
-- GoodDollar UBI reads + claim (MCP) / prepare (SDK)
+- GoodDollar UBI + reserve reads; UBI claim (MCP stdio) / prepare (SDK)
 
 **Next:**
 
