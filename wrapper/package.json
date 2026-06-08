@@ -12,5 +12,14 @@
   },
   "dependencies": {
     "@andrewkimjoseph/celina-mcp": "^0.7.13"
+  },
+  "homepage": "https://github.com/andrewkimjoseph/celina-mcp/tree/main/wrapper#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andrewkimjoseph/celina-mcp.git",
+    "directory": "wrapper"
+  },
+  "bugs": {
+    "url": "https://github.com/andrewkimjoseph/celina-mcp/issues"
   }
 }
