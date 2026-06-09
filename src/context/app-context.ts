@@ -91,6 +91,7 @@ export function createAppContext(
         ? process.env.SELF_AGENT_API_BASE
         : undefined,
     analyticsDeviceId: getMcpAnalyticsDeviceId(),
+    analyticsWalletAddress: walletAddress,
   });
 
   assertSdkServices(sdk);

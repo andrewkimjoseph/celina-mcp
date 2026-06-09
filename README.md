@@ -64,7 +64,7 @@ Install the package, then add Celina to your MCP config. Your client spawns `npx
 
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
-**Read telemetry:** Off-chain tool usage is logged anonymously via the bundled Celina SDK. Each MCP install gets a stable id (`~/.config/celina/install-id`) so stats can distinguish installs without wallet or host names. Opt out with `CELINA_ANALYTICS_DISABLED=1`; override with `CELINA_ANALYTICS_DEVICE_ID`.
+**Read telemetry:** Off-chain tool usage is logged via the bundled Celina SDK. Each MCP install gets a stable `device_id` (`~/.config/celina/install-id`) so stats can distinguish hosts; wallet-scoped reads also set Amplitude `user_id` to the public wallet address (from tool args or the `CELO_PRIVATE_KEY` signer). Opt out with `CELINA_ANALYTICS_DISABLED=1`; override with `CELINA_ANALYTICS_DEVICE_ID`.
 
 ### Claude Desktop
 
