@@ -4,13 +4,28 @@ import { executePreparedFlow, requireWalletClients } from "./execute-prepared-fl
 
 type CelinaClient = ReturnType<typeof createCelinaClient>;
 
+type SendEstimateResult = {
+  network: "mainnet";
+  from: `0x${string}`;
+  to: `0x${string}`;
+  token: string;
+  amount: string;
+  gas: string | null;
+  insufficientBalance?: boolean;
+  message?: string;
+};
+
 export class TransactionService {
   constructor(
     private readonly clientFactory: CeloClientFactory,
     private readonly sdk: CelinaClient,
   ) {}
 
-  async estimateSend(to: `0x${string}`, token: string, amount: string) {
+  async estimateSend(
+    to: `0x${string}`,
+    token: string,
+    amount: string,
+  ): Promise<SendEstimateResult> {
     const { accountAddress: from } = requireWalletClients(
       this.clientFactory.getClients(),
     );
