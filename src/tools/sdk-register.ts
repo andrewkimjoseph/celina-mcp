@@ -121,7 +121,7 @@ function createMcpRuntime(ctx: AppContext): ToolRuntime {
             agentSignature: args.agent_signature as `0x${string}`,
             agentTimestamp: args.agent_timestamp as string,
             method: args.method as string,
-            path: args.path as string,
+            path: (args.request_path ?? args.path) as string,
             body: args.body as string | undefined,
             keytype: args.keytype as string | undefined,
             agentKey: args.agent_key as `0x${string}` | undefined,

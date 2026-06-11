@@ -71,7 +71,7 @@ export async function enrichFixturesForMcp(
     agent_signature: headers["x-self-agent-signature"],
     agent_timestamp: headers["x-self-agent-timestamp"],
     method: body.method ?? "GET",
-    path: body.path ?? "/api/demo/verify?network=celo-mainnet",
+    request_path: body.path ?? "/api/demo/verify?network=celo-mainnet",
     keytype: headers["x-self-agent-keytype"],
     agent_key: headers["x-self-agent-key"],
   };
