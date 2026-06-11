@@ -19,6 +19,8 @@ export type CreateServerOptions = {
   serverKeyToolsEnabled?: boolean;
   /** Omit Self registration session tools. Default true. */
   selfSessionToolsEnabled?: boolean;
+  /** Omit estimate_* gas simulation tools. Default true. */
+  estimateToolsEnabled?: boolean;
   /** @deprecated Use carbonExecuteEnabled + carbonPrepareEnabled */
   carbonWritesEnabled?: boolean;
 };
@@ -47,6 +49,7 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
       carbonPrepareEnabled: options.carbonPrepareEnabled,
       serverKeyToolsEnabled: options.serverKeyToolsEnabled,
       selfSessionToolsEnabled: options.selfSessionToolsEnabled,
+      estimateToolsEnabled: options.estimateToolsEnabled,
       carbonWritesEnabled: options.carbonWritesEnabled,
     },
   );

@@ -15,6 +15,7 @@ export type RegisterToolsOptions = {
   carbonPrepareEnabled?: boolean;
   serverKeyToolsEnabled?: boolean;
   selfSessionToolsEnabled?: boolean;
+  estimateToolsEnabled?: boolean;
   carbonWritesEnabled?: boolean;
 };
 
@@ -205,6 +206,7 @@ export function registerSdkTools(
     carbonExecuteEnabled: carbonOpts.executeEnabled,
     serverKeyToolsEnabled: options.serverKeyToolsEnabled,
     selfSessionToolsEnabled: options.selfSessionToolsEnabled,
+    estimateToolsEnabled: options.estimateToolsEnabled,
   });
 
   for (const definition of definitions) {
