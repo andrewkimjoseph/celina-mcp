@@ -13,6 +13,8 @@ import { resolveCarbonToolsOptions } from "./carbon-options.js";
 export type RegisterToolsOptions = {
   carbonExecuteEnabled?: boolean;
   carbonPrepareEnabled?: boolean;
+  serverKeyToolsEnabled?: boolean;
+  selfSessionToolsEnabled?: boolean;
   carbonWritesEnabled?: boolean;
 };
 
@@ -201,6 +203,8 @@ export function registerSdkTools(
     surface: "mcp",
     carbonPrepareEnabled: carbonOpts.prepareEnabled,
     carbonExecuteEnabled: carbonOpts.executeEnabled,
+    serverKeyToolsEnabled: options.serverKeyToolsEnabled,
+    selfSessionToolsEnabled: options.selfSessionToolsEnabled,
   });
 
   for (const definition of definitions) {

@@ -15,6 +15,10 @@ export type CreateServerOptions = {
   carbonExecuteEnabled?: boolean;
   /** Omit prepare_carbon_* (unsigned REST prep). Default true. */
   carbonPrepareEnabled?: boolean;
+  /** Omit tools requiring CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY. Default true. */
+  serverKeyToolsEnabled?: boolean;
+  /** Omit Self registration session tools. Default true. */
+  selfSessionToolsEnabled?: boolean;
   /** @deprecated Use carbonExecuteEnabled + carbonPrepareEnabled */
   carbonWritesEnabled?: boolean;
 };
@@ -41,6 +45,8 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
     {
       carbonExecuteEnabled: options.carbonExecuteEnabled,
       carbonPrepareEnabled: options.carbonPrepareEnabled,
+      serverKeyToolsEnabled: options.serverKeyToolsEnabled,
+      selfSessionToolsEnabled: options.selfSessionToolsEnabled,
       carbonWritesEnabled: options.carbonWritesEnabled,
     },
   );
