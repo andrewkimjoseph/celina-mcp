@@ -11,18 +11,12 @@ const require = createRequire(import.meta.url);
 const { version } = require("../../package.json") as { version: string };
 
 export type CreateServerOptions = {
-  /** Omit execute_carbon_* (requires CELO_PRIVATE_KEY). Default true. */
-  carbonExecuteEnabled?: boolean;
-  /** Omit prepare_carbon_* (unsigned REST prep). Default true. */
-  carbonPrepareEnabled?: boolean;
   /** Omit tools requiring CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY. Default true. */
   serverKeyToolsEnabled?: boolean;
   /** Omit Self registration session tools. Default true. */
   selfSessionToolsEnabled?: boolean;
   /** Omit estimate_* gas simulation tools. Default true. */
   estimateToolsEnabled?: boolean;
-  /** @deprecated Use carbonExecuteEnabled + carbonPrepareEnabled */
-  carbonWritesEnabled?: boolean;
 };
 
 export function createServer(options: CreateServerOptions = {}): McpServer {
@@ -45,12 +39,9 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
     server,
     createAppContext(clientFactory, config, clients.accountAddress),
     {
-      carbonExecuteEnabled: options.carbonExecuteEnabled,
-      carbonPrepareEnabled: options.carbonPrepareEnabled,
       serverKeyToolsEnabled: options.serverKeyToolsEnabled,
       selfSessionToolsEnabled: options.selfSessionToolsEnabled,
       estimateToolsEnabled: options.estimateToolsEnabled,
-      carbonWritesEnabled: options.carbonWritesEnabled,
     },
   );
 

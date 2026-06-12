@@ -8,7 +8,7 @@
 |-------|----------------------|--------------|
 | **SDK** | [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) | Chain reads + **unsigned** transaction preparation (no private keys in your app) |
 | **MCP** | [`@andrewkimjoseph/celina-mcp`](https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp) | Model Context Protocol server for Cursor, Claude Desktop, LM Studio, VS Code / Continue, etc. |
-| **MCP Host** | [https://mcp.usecelina.xyz/api/mcp](https://mcp.usecelina.xyz/api/mcp) | Public **read-only + Carbon prepare** endpoint over Streamable HTTP (Vercel) |
+| **MCP Host** | [https://mcp.usecelina.xyz/api/mcp](https://mcp.usecelina.xyz/api/mcp) | Public **read-only** endpoint over Streamable HTTP (Vercel) |
 
 All three are **open source (MIT)**, **Celo mainnet only**, and designed so humans keep custody: agents and backends prepare flows; **wallets sign**.
 
@@ -35,7 +35,7 @@ Celo is mobile-first, stablecoin-rich, and increasingly agent-shaped—but LLMs 
 
 - A consistent **token registry** (USDm, EURm, CELO, GoodDollar, bridged stables, etc.)
 - Safe **read → quote → estimate → prepare → sign** patterns
-- First-class coverage of **Celo-native DeFi** (Mento FX, GoodDollar reserve, Uniswap v4 on Celo, Aave V3, Carbon DeFi, GoodDollar UBI, governance, staking)
+- First-class coverage of **Celo-native DeFi** (Mento FX, GoodDollar reserve, Uniswap v4 on Celo, Aave V3, GoodDollar UBI, governance, staking)
 - A standard way to plug into **MCP** clients without every team re-wiring viem calls
 
 **Celina** ("Celo" + agent tooling) is Canvassing Intelligence's answer: one TypeScript SDK, one MCP server, and one hosted endpoint so you can start in an IDE in minutes or embed the SDK in a product with wagmi.
@@ -66,9 +66,9 @@ Celo is mobile-first, stablecoin-rich, and increasingly agent-shaped—but LLMs 
 
 **Capabilities:**
 
-- **Reads:** balances, blocks, txs, ENS, governance, staking, NFTs, contract calls (caller-supplied ABI), GoodDollar whitelist/UBI/reserve quotes, Carbon DeFi exploration, and more
+- **Reads:** balances, blocks, txs, ENS, governance, staking, NFTs, contract calls (caller-supplied ABI), GoodDollar whitelist/UBI/reserve quotes, and more
 - **Prepare:** returns `SerializedPreparedFlow` — ordered unsigned steps for **wagmi** `sendTransactionAsync` / viem `walletClient.sendTransaction`
-- **Attribution:** every calldata step gets a **CELINA suffix** (`appendCelinaCalldataTag`) so on-chain activity can be attributed consistently (sends, Mento, Uniswap, Aave, GoodDollar, Carbon controller txs)
+- **Attribution:** every calldata step gets a **CELINA suffix** (`appendCelinaCalldataTag`) so on-chain activity can be attributed consistently (sends, Mento, Uniswap, Aave, GoodDollar)
 
 **Install:**
 
@@ -105,7 +105,7 @@ const flow = await celina.transaction.prepareSend(
 
 **For:** AI agents in **Cursor**, **Claude Desktop**, **LM Studio**, **Continue**, MCP Inspector, or any MCP-capable stack.
 
-Celina MCP wraps the SDK and exposes **dozens of tools** your model can call: chain reads, quotes, gas estimates, optional **local writes** when you provide keys, Carbon maker/taker flows, Self Agent ID lifecycle tools, and more.
+Celina MCP wraps the SDK and exposes **dozens of tools** your model can call: chain reads, quotes, gas estimates, optional **local writes** when you provide keys, Self Agent ID lifecycle tools, and more.
 
 **Recommended setup (local stdio — full power, keys stay on your machine):**
 
@@ -126,13 +126,13 @@ Celina MCP wraps the SDK and exposes **dozens of tools** your model can call: ch
 ```
 
 - Omit both keys for **read-only** usage.
-- **`CELO_PRIVATE_KEY`:** `send_token`, Mento/Uniswap/Aave executes, GoodDollar claim, **`execute_carbon_*`**
+- **`CELO_PRIVATE_KEY`:** `send_token`, Mento/Uniswap/Aave executes, GoodDollar claim
 - **`SELF_AGENT_PRIVATE_KEY`:** Self Agent ID signing tools (separate from your CELO wallet)
 
 **Session wallet (stdio with `CELO_PRIVATE_KEY`):**
 
 - Call `get_wallet_address` when you need the signer as data
-- On many tools, **omit** `address` / `wallet_address` / `from` for "my wallet" reads and Carbon prepare
+- On many tools, **omit** `address` / `wallet_address` / `from` for "my wallet" reads
 - Never derive addresses from shell or scrape `.env` in prompts
 
 **Install:**
@@ -167,24 +167,22 @@ npm i @andrewkimjoseph/celina-mcp@latest
 }
 ```
 
-**Hosted surface (~75 tools):**
+**Hosted surface (~29 tools):**
 
 - All **`get_*`** reads, ENS, governance, staking, NFTs, contract reads
 - Mento / Uniswap **quotes** (not executes)
 - GoodDollar whitelist + UBI **entitlement** reads + **G$ ↔ USDm reserve quote** (`get_gooddollar_reserve_quote`)
-- Carbon **12 read tools** + **13 `prepare_carbon_*`** (full unsigned flows including approvals)
 - Self **verify / lookup** reads
 
 **Intentionally disabled on hosted (no server keys):**
 
 - `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, Aave supply/withdraw, `claim_daily_gooddollar_ubi`
-- All **`execute_carbon_*`**
 - `get_wallet_address`
 - Self registration sessions are **unreliable** on stateless serverless (in-memory session TTL)
 
-**Do not send private keys to the hosted URL.** For writes and Carbon execute, use **local stdio** MCP.
+**Do not send private keys to the hosted URL.** For writes, use **local stdio** MCP.
 
-**Deploy your own:** [github.com/andrewkimjoseph/celina-mcp-host](https://github.com/andrewkimjoseph/celina-mcp-host) (Vercel, imports `createServer` from `@andrewkimjoseph/celina-mcp/server` with `carbonExecuteEnabled: false`).
+**Deploy your own:** [github.com/andrewkimjoseph/celina-mcp-host](https://github.com/andrewkimjoseph/celina-mcp-host) (Vercel, imports `createServer` from `@andrewkimjoseph/celina-mcp/server` ).
 
 ---
 
@@ -207,15 +205,6 @@ npm i @andrewkimjoseph/celina-mcp@latest
 
 **G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap. CELO swaps on Uniswap route through **WCELO**; the signer needs wrapped CELO balance for those pools.
 
-### Carbon DeFi on Celo (38 MCP tools)
-
-Hybrid **Carbon REST** + `@bancor/carbon-sdk` for maker strategies and taker swaps on [celo.carbondefi.xyz](https://celo.carbondefi.xyz):
-
-- **Reads:** strategies, pair exploration, quotes, simulation, protocol stats, opportunities, education (`carbon_help`, `carbon_learn`)
-- **Prepare:** limit/range/recurring/concentrated/full-range orders, edit/reprice/deposit/withdraw/pause/resume/delete, taker trade prep
-- **Execute (stdio only):** local sign-and-broadcast with `CELO_PRIVATE_KEY`; makers pay **no gas on fills** for recurring strategies
-
-Recommended agent flow: `get_carbon_strategies` → explore/quote → `simulate_carbon_strategy` → prepare or execute; always surface **`warnings`** from prepare/execute responses.
 
 ### GoodDollar
 
@@ -243,7 +232,7 @@ Recommended agent flow: `get_carbon_strategies` → explore/quote → `simulate_
 
 1. **SDK:** No private keys—only unsigned preparation. Users sign in Valora, MetaMask, Rabby, etc.
 2. **MCP stdio:** Keys live in **your** MCP `env`, on your machine—not sent to Canvassing Intelligence or the hosted MCP endpoint.
-3. **MCP host:** **No keys on the server**; writes and Carbon execute are blocked or error clearly.
+3. **MCP host:** **No keys on the server**; writes are blocked or error clearly.
 4. **Telemetry:** Anonymous read telemetry via SDK (stable install id at `~/.config/celina/install-id`). Opt out: `CELINA_ANALYTICS_DISABLED=1`.
 
 ---
@@ -253,8 +242,8 @@ Recommended agent flow: `get_carbon_strategies` → explore/quote → `simulate_
 The ecosystem also has the official **[Celo MCP from celo-org](https://docs.celo.org/build-on-celo/build-with-ai/mcp/celo-mcp)** (Python, broad blockchain access). **Celina** is **unofficial**, **TypeScript-native**, and **mainnet-focused**:
 
 - Prepared flows + wagmi integration
-- Deep integrations: **Mento, GoodDollar reserve, Uniswap v4, Aave, Carbon, GoodDollar UBI, Self Agent ID**
-- A **hosted MCP** endpoint for zero-install reads and Carbon prepare
+- Deep integrations: **Mento, GoodDollar reserve, Uniswap v4, Aave, GoodDollar UBI, Self Agent ID**
+- A **hosted MCP** endpoint for zero-install reads
 
 They can coexist in different clients; pick based on language, deployment model, and DeFi coverage.
 
@@ -274,7 +263,7 @@ They can coexist in different clients; pick based on language, deployment model,
 }
 ```
 
-Then ask: *"What are the USDm and CELO balances of `0x…`?"* or *"Explore Carbon liquidity for CELO/USDC."*
+Then ask: *"What are the USDm and CELO balances of `0x…`?"* or *"Quote a Mento FX swap from USDm to EURm."*
 
 **Local (writes enabled):** Use the stdio config in the Celina MCP section above with your own key, then: *"What is my wallet address?"* → *"Estimate sending 1 USDm to …"*
 
@@ -311,7 +300,6 @@ Live dashboard: **[usecelina.xyz/stats](https://usecelina.xyz/stats)** — on-ch
 
 - Mento FX, GoodDollar reserve, Uniswap v4, Aave V3 on Celo
 - Self proof verification + Agent ID lifecycle tools
-- Carbon DeFi — 25 SDK operations / 38 MCP tools
 - GoodDollar UBI + reserve reads; UBI claim (MCP stdio) / prepare (SDK)
 
 **Next:**
@@ -345,7 +333,7 @@ Live dashboard: **[usecelina.xyz/stats](https://usecelina.xyz/stats)** — on-ch
 If you build agents, miniapps, or wallet flows on Celo, **Canvassing Intelligence** would like to hear:
 
 - Which MCP client you use (Cursor, Claude, LM Studio, other)
-- Whether **hosted read + Carbon prepare** is enough for your team, or you need self-hosted MCP host
+- Whether **hosted read-only MCP** is enough for your team, or you need self-hosted MCP host
 - Missing tokens, protocols, or prepare flows for your use case
 
 Reply in this thread with wallets-as-`0x…` examples (no private keys), feature requests, or integrations you are building—the team is actively iterating.
@@ -360,4 +348,4 @@ Reply in this thread with wallets-as-`0x…` examples (no private keys), feature
 
 - **Suggested title:** `Announcing Celina (unofficial) — SDK, MCP & Hosted MCP from Canvassing Intelligence`
 - **Suggested category:** Developers / Build on Celo / AI
-- **Tags:** `mcp`, `ai`, `sdk`, `agents`, `defi`, `carbon`, `gooddollar`, `mainnet`
+- **Tags:** `mcp`, `ai`, `sdk`, `agents`, `defi`, `gooddollar`, `mainnet`

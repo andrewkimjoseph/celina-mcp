@@ -4,36 +4,20 @@ import {
   filterToolDefinitions,
   type ToolDefinition,
   type ToolRuntime,
+  type ToolRuntimeExecutors,
 } from "@andrewkimjoseph/celina-sdk/tools";
 import type { AppContext } from "../context/app-context.js";
 import { err, ok, okSelfSession } from "./helpers.js";
 import { resolveWalletAddress } from "./resolve-wallet.js";
-import { resolveCarbonToolsOptions } from "./carbon-options.js";
 
 export type RegisterToolsOptions = {
-  carbonExecuteEnabled?: boolean;
-  carbonPrepareEnabled?: boolean;
   serverKeyToolsEnabled?: boolean;
   selfSessionToolsEnabled?: boolean;
   estimateToolsEnabled?: boolean;
-  carbonWritesEnabled?: boolean;
 };
 
 function createMcpRuntime(ctx: AppContext): ToolRuntime {
-  return {
-    celina: ctx.sdk,
-    resolveWallet: (input) =>
-      resolveWalletAddress(
-        ctx,
-        input?.address ?? input?.wallet_address ?? input?.from,
-      ),
-    mcpWallet: ctx.config.walletAddress
-      ? {
-          address: ctx.config.walletAddress,
-          hasWallet: ctx.config.hasWallet,
-        }
-      : undefined,
-    executors: {
+  const executors: ToolRuntimeExecutors = {
       transaction: {
         estimateSend: (to, token, amount) =>
           ctx.transaction.estimateSend(to, token, amount),
@@ -72,27 +56,6 @@ function createMcpRuntime(ctx: AppContext): ToolRuntime {
         supply: (token, amount) => ctx.aave.supply(token, amount),
         withdraw: (token, amount, withdrawMax) =>
           ctx.aave.withdraw(token, amount, withdrawMax),
-      },
-      carbonWrite: {
-        executeLimitOrder: (body) => ctx.carbonWrite.executeLimitOrder(body),
-        executeRangeOrder: (body) => ctx.carbonWrite.executeRangeOrder(body),
-        executeRecurringStrategy: (body) =>
-          ctx.carbonWrite.executeRecurringStrategy(body),
-        executeConcentratedStrategy: (body) =>
-          ctx.carbonWrite.executeConcentratedStrategy(body),
-        executeFullRangeStrategy: (body) =>
-          ctx.carbonWrite.executeFullRangeStrategy(body),
-        executeRepriceStrategy: (body) =>
-          ctx.carbonWrite.executeRepriceStrategy(body),
-        executeEditStrategy: (body) => ctx.carbonWrite.executeEditStrategy(body),
-        executeDepositBudget: (body) => ctx.carbonWrite.executeDepositBudget(body),
-        executeWithdrawBudget: (body) =>
-          ctx.carbonWrite.executeWithdrawBudget(body),
-        executePauseStrategy: (body) => ctx.carbonWrite.executePauseStrategy(body),
-        executeResumeStrategy: (body) =>
-          ctx.carbonWrite.executeResumeStrategy(body),
-        executeDeleteStrategy: (body) => ctx.carbonWrite.executeDeleteStrategy(body),
-        executeTrade: (body) => ctx.carbonWrite.executeTrade(body),
       },
       gooddollarWrite: {
         claimDailyUbi: () => ctx.gooddollarWrite.claimDailyUbi(),
@@ -156,7 +119,22 @@ function createMcpRuntime(ctx: AppContext): ToolRuntime {
             contentType: args.content_type as string | undefined,
           }),
       },
-    },
+  };
+
+  return {
+    celina: ctx.sdk,
+    resolveWallet: (input) =>
+      resolveWalletAddress(
+        ctx,
+        input?.address ?? input?.wallet_address ?? input?.from,
+      ),
+    mcpWallet: ctx.config.walletAddress
+      ? {
+          address: ctx.config.walletAddress,
+          hasWallet: ctx.config.hasWallet,
+        }
+      : undefined,
+    executors,
   };
 }
 
@@ -174,7 +152,7 @@ function registerDefinition(
       inputSchema,
       annotations: mcp?.annotations,
     },
-    async (input) => {
+    async (input: Record<string, unknown>) => {
       try {
         const result = await definition.handler(runtime, input as Record<string, unknown>);
         if (mcp?.responseKind === "self_session") {
@@ -193,17 +171,9 @@ export function registerSdkTools(
   ctx: AppContext,
   options: RegisterToolsOptions = {},
 ): void {
-  const carbonOpts = resolveCarbonToolsOptions({
-    prepareEnabled: options.carbonPrepareEnabled,
-    executeEnabled: options.carbonExecuteEnabled,
-    ...(options.carbonWritesEnabled === false ? { writesEnabled: false } : {}),
-  });
-
   const runtime = createMcpRuntime(ctx);
   const definitions = filterToolDefinitions(ALL_TOOL_DEFINITIONS, {
     surface: "mcp",
-    carbonPrepareEnabled: carbonOpts.prepareEnabled,
-    carbonExecuteEnabled: carbonOpts.executeEnabled,
     serverKeyToolsEnabled: options.serverKeyToolsEnabled,
     selfSessionToolsEnabled: options.selfSessionToolsEnabled,
     estimateToolsEnabled: options.estimateToolsEnabled,

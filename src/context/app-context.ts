@@ -12,7 +12,6 @@ import { TransactionService } from "../services/transaction.service.js";
 import { MentoFxService } from "../services/mento-fx.service.js";
 import { UniswapService } from "../services/uniswap.service.js";
 import { AaveService } from "../services/aave.service.js";
-import { CarbonWriteService } from "../services/carbon-write.service.js";
 import { GoodDollarWriteService } from "../services/gooddollar.service.js";
 import type { AppConfig } from "../config/env.js";
 
@@ -25,7 +24,6 @@ function assertSdkServices(
     "nft",
     "contract",
     "uniswap",
-    "carbon",
     "self",
   ] as const;
 
@@ -65,12 +63,9 @@ export interface AppContext {
   staking: ReturnType<typeof createCelinaClient>["staking"];
   nft: ReturnType<typeof createCelinaClient>["nft"];
   contract: ReturnType<typeof createCelinaClient>["contract"];
-  /** Carbon DeFi writes — signs prepared Carbon steps with `CELO_PRIVATE_KEY`. */
-  carbonWrite: CarbonWriteService;
   /** Self Agent ID — from celina-sdk; requires `SELF_AGENT_PRIVATE_KEY` for signing tools. */
   self: ReturnType<typeof createCelinaClient>["self"];
   ens: ReturnType<typeof createCelinaClient>["ens"];
-  carbon: ReturnType<typeof createCelinaClient>["carbon"];
 }
 
 /**
@@ -119,7 +114,5 @@ export function createAppContext(
     contract: sdk.contract,
     self: sdk.self,
     ens: sdk.ens,
-    carbon: sdk.carbon,
-    carbonWrite: new CarbonWriteService(clientFactory, sdk),
   };
 }
