@@ -167,7 +167,7 @@ npm i @andrewkimjoseph/celina-mcp@latest
 }
 ```
 
-**Hosted surface (~29 tools):**
+**Hosted surface (~30 tools):**
 
 - All **`get_*`** reads, ENS, governance, staking, NFTs, contract reads
 - Mento / Uniswap **quotes** (not executes)
@@ -201,7 +201,7 @@ npm i @andrewkimjoseph/celina-mcp@latest
 | **Mento FX** | Oracle-priced Mento assets (USDm, EURm, CELO, …) | `get_mento_fx_quote` → `estimate_mento_fx` → `execute_mento_fx` |
 | **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` → `estimate_gooddollar_reserve_swap` → `execute_gooddollar_reserve_swap` (stdio) |
 | **Uniswap v4** | AMM pairs (e.g. G$ → USDT) | `get_uniswap_quote` → `estimate_uniswap_swap` → `execute_uniswap_swap` |
-| **Aave V3 on Celo** | Supply / withdraw | `supply_aave`, `withdraw_aave` |
+| **Aave V3 on Celo** | Supply / withdraw | `get_aave_balances` → `supply_aave` / `withdraw_aave` |
 
 **G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap. CELO swaps on Uniswap route through **WCELO**; the signer needs wrapped CELO balance for those pools.
 
