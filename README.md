@@ -201,7 +201,7 @@ The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do
 
 **Works without keys:** all `get_*` tools (including `get_aave_balances`), `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `get_gooddollar_reserve_quote`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, etc.
 
-**Hosted MCP:** **30 tools** — reads and oracle/AMM quotes. **`estimate_*`**, server-key writes (`send_token`, `execute_mento_fx`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
+**Hosted MCP:** **31 tools** — reads and oracle/AMM quotes. **`estimate_*`**, server-key writes (`send_token`, `execute_mento_fx`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -280,7 +280,8 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 | `get_aave_balances` | read | Supplied Aave V3 positions (aToken balances) on Celo |
 | `supply_aave` | write | Supply tokens to Aave V3 on Celo (USDT, WETH, USDm, USDC, CELO, EURm) |
 | `withdraw_aave` | write | Withdraw tokens from Aave V3 on Celo |
-| `get_gooddollar_whitelisting_info` | read | GoodDollar IdentityV4 whitelist status |
+| `get_gooddollar_whitelisting_info` | read | GoodDollar IdentityV4 whitelist status (connected wallets resolve to root) |
+| `get_gooddollar_identity_link` | read | GoodDollar IdentityV4 link graph (root, connectedTo) |
 | `get_gooddollar_ubi_entitlement` | read | Daily UBI claim eligibility (amount, whitelist root, reasons) |
 | `get_gooddollar_reserve_quote` | read | G$ ↔ USDm quote via GoodDollar MentoBroker reserve (bonding curve) |
 | `estimate_gooddollar_reserve_swap` | read* | Reserve swap gas estimate (*needs `CELO_PRIVATE_KEY`) |
@@ -326,11 +327,12 @@ Recommended LLM flow: quote the relevant route(s), compare `expectedOut`, then e
 
 #### UBI
 
-Daily G$ claims via UBISchemeV2 on Celo (`0x43d72Ff17701B2DA814620735C39C620Ce0ea4A1`). Identity must be whitelisted; connected wallets resolve to their verified root. **One claim per identity per day.**
+Daily G$ claims via UBISchemeV2 on Celo (`0x43d72Ff17701B2DA814620735C39C620Ce0ea4A1`). Identity must be whitelisted; connected wallets resolve to their verified root. Balance and reserve tools use the literal wallet address only. **One claim per identity per UBI period.**
 
 | Tool | Type | Notes |
 |------|------|-------|
-| `get_gooddollar_whitelisting_info` | read | IdentityV4 status, reverification timeline |
+| `get_gooddollar_identity_link` | read | Root vs connected-wallet link |
+| `get_gooddollar_whitelisting_info` | read | IdentityV4 status, reverification timeline (root-resolved) |
 | `get_gooddollar_ubi_entitlement` | read | Claimable G$, whitelist root, eligibility reasons |
 | `claim_daily_gooddollar_ubi` | write | Claims for MCP server wallet (`CELO_PRIVATE_KEY`); stdio only |
 
