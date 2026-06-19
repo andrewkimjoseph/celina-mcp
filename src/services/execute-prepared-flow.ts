@@ -1,4 +1,7 @@
-import type { PreparedTx } from "@andrewkimjoseph/celina-sdk";
+import {
+  simulatePreparedStepWithFeeCurrency,
+  type PreparedTx,
+} from "@andrewkimjoseph/celina-sdk";
 import { type Hex } from "viem";
 import type { CeloClients } from "../clients/celo-client.js";
 
@@ -48,12 +51,22 @@ export async function executePreparedFlow(
   const stepHashes: `0x${string}`[] = [];
 
   for (const step of steps) {
+    const feeCurrency = await simulatePreparedStepWithFeeCurrency(
+      publicClient as Parameters<typeof simulatePreparedStepWithFeeCurrency>[0],
+      {
+        from: account.address,
+        step,
+        isMiniPay: false,
+      },
+    );
+
     const hash = await wallet.sendTransaction({
       chain,
       account,
       to: step.to,
       data: step.data as Hex | undefined,
       value: step.value ? BigInt(step.value) : undefined,
+      ...(feeCurrency ? { feeCurrency } : {}),
     });
 
     stepHashes.push(hash);
