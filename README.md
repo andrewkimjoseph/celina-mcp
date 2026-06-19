@@ -112,7 +112,7 @@ For development from a cloned repo, point at your local `build/index.js`:
 
 Celina is a plain MCP server. Pair it with any MCP-aware local stack — Ollama, LM Studio, llama.cpp — through a client that supports tool calling.
 
-Read-only tools (balances, blocks, GoodDollar status, etc.) work out of the box. For write tools, set `CELO_PRIVATE_KEY` in the MCP server `env` block.
+Read-only tools (balances, blocks, GoodDollar status, etc.) work out of the box. For write tools, set `CELO_PRIVATE_KEY` in the MCP server `env` block. Stdio writes simulate each prepared step before broadcast to catch reverts before gas is spent.
 
 ### LM Studio (0.3.17+)
 
@@ -379,13 +379,15 @@ Set `surfaces` on the definition (`"mcp"`, `"browser"`, or both) and use `filter
 
 ### Architecture split
 
-Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) signs each step with `CELO_PRIVATE_KEY`:
+Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) simulates each step with [`simulatePreparedStep`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk/simulation) before signing with `CELO_PRIVATE_KEY`:
 
 | Layer | Source | Examples |
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap/reserve quotes, GoodDollar whitelist/UBI/reserve, ENS |
 | Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi` |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
+
+Before each `wallet.sendTransaction`, `executePreparedFlow` calls `simulatePreparedStep` from `@andrewkimjoseph/celina-sdk/simulation`. Reverts are caught **before gas is spent**; a post-mine `receipt.status` check remains as a safety net. No `feeCurrency` — the server wallet pays CELO gas.
 
 Mento FX routing uses `@mento-protocol/mento-sdk` transitively through celina-sdk — MCP does not import it directly.
 
