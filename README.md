@@ -199,9 +199,9 @@ A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (
 
 The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all `get_*` tools (including `get_aave_balances`), `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `get_gooddollar_reserve_quote`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, governance/staking/NFT/contract reads, etc.
+**Works without keys:** all `get_*` tools (including `get_aave_balances`), `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `get_gooddollar_reserve_quote`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, `get_agentkarma_reputation`, `get_agentkarma_celo_agent`, `check_agentkarma_counterparty`, governance/staking/NFT/contract reads, etc.
 
-**Hosted MCP:** **31 tools** — reads and oracle/AMM quotes. **`estimate_*`**, server-key writes (`send_token`, `execute_mento_fx`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
+**Hosted MCP:** **34 tools** — reads, oracle/AMM quotes, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_mento_fx`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -308,6 +308,9 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 | `deregister_self_agent` | write | Irreversibly revoke Self agent identity |
 | `sign_self_request` | read* | Sign HTTP request with Self agent headers (*needs agent key) |
 | `authenticated_self_fetch` | write | HTTP fetch with Self agent auth (*needs agent key) |
+| `get_agentkarma_reputation` | read | AgentKarma Provider + Consumer karma for a Celo wallet |
+| `get_agentkarma_celo_agent` | read | ERC-8004 Celo agent by numeric ID |
+| `check_agentkarma_counterparty` | read | Local trust-policy evaluation against karma snapshot |
 
 ### Swap routing (Mento FX, GoodDollar reserve, Uniswap v4)
 

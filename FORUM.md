@@ -167,12 +167,13 @@ npm i @andrewkimjoseph/celina-mcp@latest
 }
 ```
 
-**Hosted surface (~30 tools):**
+**Hosted surface (34 tools):**
 
 - All **`get_*`** reads, ENS, governance, staking, NFTs, contract reads
 - Mento / Uniswap **quotes** (not executes)
 - GoodDollar whitelist + UBI **entitlement** reads + **G$ ↔ USDm reserve quote** (`get_gooddollar_reserve_quote`)
 - Self **verify / lookup** reads
+- AgentKarma reputation reads (`get_agentkarma_reputation`, `get_agentkarma_celo_agent`, `check_agentkarma_counterparty`) — read-only external API
 
 **Intentionally disabled on hosted (no server keys):**
 
