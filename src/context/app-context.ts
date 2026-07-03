@@ -14,6 +14,7 @@ import { UniswapService } from "../services/uniswap.service.js";
 import { AaveService } from "../services/aave.service.js";
 import { GoodDollarWriteService } from "../services/gooddollar.service.js";
 import type { AppConfig } from "../config/env.js";
+import type { CreateServerOptions } from "../server/create-server.js";
 
 function assertSdkServices(
   sdk: ReturnType<typeof createCelinaClient>,
@@ -76,6 +77,7 @@ export function createAppContext(
   clientFactory: CeloClientFactory,
   config: AppConfig,
   walletAddress?: `0x${string}`,
+  options?: Pick<CreateServerOptions, "analyticsEnabled" | "analyticsDeviceId">,
 ): AppContext {
   const sdk = createCelinaClient({
     rpcUrl: config.rpcUrl,
@@ -85,7 +87,8 @@ export function createAppContext(
       typeof process !== "undefined"
         ? process.env.SELF_AGENT_API_BASE
         : undefined,
-    analyticsDeviceId: getMcpAnalyticsDeviceId(),
+    analyticsEnabled: options?.analyticsEnabled,
+    analyticsDeviceId: options?.analyticsDeviceId ?? getMcpAnalyticsDeviceId(),
     analyticsWalletAddress: walletAddress,
   });
 

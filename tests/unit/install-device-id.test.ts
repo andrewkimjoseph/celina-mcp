@@ -38,11 +38,4 @@ describe("install-device-id", () => {
     const deviceId = mod.getMcpAnalyticsDeviceId();
     expect(deviceId).toMatch(/^andrewkimjoseph_celina_mcp_[a-f0-9]{8}$/);
   });
-
-  it("uses CELINA_ANALYTICS_DEVICE_ID when set", async () => {
-    vi.stubEnv("CELINA_ANALYTICS_DEVICE_ID", "custom_install");
-    vi.resetModules();
-    const mod = await import("../../src/analytics/install-device-id.js");
-    expect(mod.getMcpAnalyticsDeviceId()).toBe("custom_install");
-  });
 });

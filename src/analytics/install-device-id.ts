@@ -35,13 +35,9 @@ export function getOrCreateInstallId(): string {
 
 /**
  * Amplitude device_id for this MCP install.
- * Env override wins; otherwise package id + per-install suffix.
+ * Package id + per-install suffix from ~/.config/celina/install-id.
  */
 export function getMcpAnalyticsDeviceId(): string {
-  const envOverride = process.env.CELINA_ANALYTICS_DEVICE_ID?.trim();
-  if (envOverride) {
-    return envOverride;
-  }
   const suffix = getOrCreateInstallId();
   if (!suffix) {
     return MCP_PACKAGE_DEVICE_ID;
