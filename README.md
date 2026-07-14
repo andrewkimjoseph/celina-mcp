@@ -234,6 +234,8 @@ Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package
 | `SELF_AGENT_API_BASE` | `https://app.ai.self.xyz` | Override Self Agent ID REST API base URL |
 | `CELO_RPC_URL_MAINNET` | Forno public RPC | Override mainnet RPC |
 
+**Account Abstraction / gas sponsorship:** Celina MCP does **not** take a Pimlico (or other) sponsorship API key. Sponsored UserOps use `@andrewkimjoseph/celina-sdk` [`createAAClient`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/account-abstraction.md) in your app with **your** `gasSponsorship` provider credentials. Stdio `execute_*` remains EOA-only via `CELO_PRIVATE_KEY`.
+
 Copy `.env.example` to `.env` for local development.
 
 ## Known tokens
