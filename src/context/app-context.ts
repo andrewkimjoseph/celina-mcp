@@ -12,6 +12,7 @@ import { TransactionService } from "../services/transaction.service.js";
 import { MentoFxService } from "../services/mento-fx.service.js";
 import { UniswapService } from "../services/uniswap.service.js";
 import { AaveService } from "../services/aave.service.js";
+import { ContractWriteService } from "../services/contract-write.service.js";
 import { GoodDollarWriteService } from "../services/gooddollar.service.js";
 import type { AppConfig } from "../config/env.js";
 import type { CreateServerOptions } from "../server/create-server.js";
@@ -58,6 +59,7 @@ export interface AppContext {
   mentoFx: MentoFxService;
   uniswap: UniswapService;
   aave: AaveService;
+  contractWrite: ContractWriteService;
   gooddollar: ReturnType<typeof createCelinaClient>["gooddollar"];
   gooddollarWrite: GoodDollarWriteService;
   governance: ReturnType<typeof createCelinaClient>["governance"];
@@ -109,6 +111,7 @@ export function createAppContext(
     mentoFx: new MentoFxService(clientFactory, sdk),
     uniswap: new UniswapService(clientFactory, sdk),
     aave: new AaveService(clientFactory, sdk),
+    contractWrite: new ContractWriteService(clientFactory, sdk),
     gooddollar: sdk.gooddollar,
     gooddollarWrite: new GoodDollarWriteService(clientFactory, sdk),
     governance: sdk.governance,

@@ -43,6 +43,16 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
       withdraw: (token, amount, withdrawMax) =>
         ctx.aave.withdraw(token, amount, withdrawMax),
     },
+    contract: {
+      executeFunction: (params) =>
+        ctx.contractWrite.executeFunction({
+          contractAddress: params.contractAddress,
+          functionName: params.functionName,
+          abi: params.abi as import("viem").Abi,
+          functionArgs: params.functionArgs,
+          value: params.value,
+        }),
+    },
     gooddollarWrite: {
       claimDailyUbi: () => ctx.gooddollarWrite.claimDailyUbi(),
       estimateReserveSwap: (tokenIn, tokenOut, amount, options) =>

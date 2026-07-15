@@ -15,7 +15,7 @@ Guidelines:
 - Use get_gas_fee_data before estimate_transaction or estimate_send when possible.
 - Governance tools (get_governance_proposals, get_proposal_details) fetch on-chain data; set includeMetadata=false for faster list responses.
 - Staking tools read Celo validator election data (get_staking_balances, get_validator_groups, etc.).
-- Contract tools (call_contract_function, estimate_contract_gas) require caller-supplied ABI JSON; read-only only.
+- Contract tools: call_contract_function (read) and estimate_contract_gas require caller-supplied ABI JSON. For writes, call estimate_contract_gas then execute_contract_function (requires CELO_PRIVATE_KEY). Optional value is wei as a decimal string. Browser/SDK apps use prepare_contract_function for user wallet signing.
 - NFT tools (get_nft_info, get_nft_balance) support ERC-721 and ERC-1155.
 - GoodDollar identity: get_gooddollar_identity_link for how a wallet links to IdentityV4 (root, connectedTo). get_gooddollar_whitelisting_info and get_gooddollar_ubi_entitlement resolve connected wallets to their verified root (isWhitelisted, whitelistedRoot, checkedAddress).
 - GoodDollar UBI: use get_gooddollar_ubi_entitlement before claim_daily_gooddollar_ubi (server wallet, CELO_PRIVATE_KEY). One claim per identity per UBI period; connected wallets share the root cooldown.

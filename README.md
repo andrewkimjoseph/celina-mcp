@@ -209,7 +209,7 @@ See [celina-mcp-host/README.md](../celina-mcp-host/README.md) if you want to dep
 
 ## Write tools
 
-Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
+Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_contract_function`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
 
 ## Session wallet (local stdio)
 
@@ -219,7 +219,7 @@ When `CELO_PRIVATE_KEY` is set, the server derives a **session wallet** at start
 2. **Omit `address` / `wallet_address` / `from`** on wallet-scoped reads for “my” balances and activity.
 3. **Never** derive addresses from shell or read `.env`.
 
-Wallet-scoped tools with optional address: `get_account`, token balance tools, staking reads, GoodDollar reads, `get_nft_balance`, `estimate_transaction` (`from` only), contract reads (`fromAddress`).
+Wallet-scoped tools with optional address: `get_account`, token balance tools, staking reads, GoodDollar reads, `get_nft_balance`, `estimate_transaction` (`from` only), contract reads (`fromAddress`). `execute_contract_function` uses the session signer (no address arg).
 
 On **hosted** MCP (no key), pass explicit addresses. `get_wallet_address` returns an error without a configured key.
 
@@ -302,6 +302,7 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 | `get_nft_balance` | read | NFT balance (ERC-721 or ERC-1155) |
 | `call_contract_function` | read | Read-only contract call (caller ABI) |
 | `estimate_contract_gas` | read | Contract function gas estimate (caller ABI) |
+| `execute_contract_function` | write | State-changing contract call (caller ABI; requires `CELO_PRIVATE_KEY`) |
 | `verify_self_agent` | read | Verify Self Agent ID on-chain by address |
 | `lookup_self_agent` | read | Look up Self agent by numeric ID (ai.self.xyz) |
 | `verify_self_request` | read | Verify signed Self Agent HTTP request headers |
@@ -391,7 +392,7 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 | Layer | Source | Examples |
 |-------|--------|----------|
 | Reads | celina-sdk | balances, blocks, Mento/Uniswap/reserve quotes, GoodDollar whitelist/UBI/reserve, ENS |
-| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi` |
+| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_contract_function` |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 
 Before each `wallet.sendTransaction`, `executePreparedFlow` calls `simulatePreparedStep` from `@andrewkimjoseph/celina-sdk/simulation`. Reverts are caught **before gas is spent**; a post-mine `receipt.status` check remains as a safety net. No `feeCurrency` — the server wallet pays CELO gas.
