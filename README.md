@@ -262,7 +262,7 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 | `get_block` | read | Block by number/hash/latest (optional `includeTransactions`) |
 | `get_latest_blocks` | read | Recent blocks (optional `offset`, up to 100) |
 | `get_transaction` | read | Tx + receipt |
-| `check_attribution_tag` | read | Prefer: unified custom `tags` (excludes platform CELINA/celina) or confirm one tag on a tx |
+| `check_attribution_tag` | read | Prefer: all ERC-8021 `tags` in lowercase (includes `celina`, mirrors `erc8021.codes`) or confirm one tag on a tx |
 | `verify_attribution_tag` | read | Raw legacy + ERC-8021 attribution decode for a tx |
 | `get_wallet_address` | read | Signer address from `CELO_PRIVATE_KEY` (stdio) |
 | `get_account` | read | CELO balance, nonce (omit `address` for configured signer) |
@@ -327,7 +327,7 @@ Three swap routes are available. Pick based on the token pair:
 | **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` | `estimate_gooddollar_reserve_swap` → `execute_gooddollar_reserve_swap` |
 | **Uniswap v4** | AMM pairs (e.g. G$ → USDT, USDC → USDT) | `get_uniswap_quote` | `estimate_uniswap_swap` → `execute_uniswap_swap` |
 
-**G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap (pools are typically illiquid). **G$ → USDT** and similar AMM pairs use Uniswap when Mento FX has no route. CELO swaps on Uniswap route through WCELO pools — the signer needs WCELO (wrapped CELO) balance, not native CELO. All on-chain steps include Celina ERC-8021 Schema 0 attribution (`celina` + optional app codes). Prefer `check_attribution_tag` to confirm custom tags on a tx hash. Sponsored UserOps use the SDK [`createAAClient`](https://andrewkimjoseph.gitbook.io/celina-sdk/guides/account-abstraction) in your app — Celina MCP does not host Pimlico/gas sponsorship keys.
+**G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap (pools are typically illiquid). **G$ → USDT** and similar AMM pairs use Uniswap when Mento FX has no route. CELO swaps on Uniswap route through WCELO pools — the signer needs WCELO (wrapped CELO) balance, not native CELO. All on-chain steps include Celina ERC-8021 Schema 0 attribution (`celina` + optional app codes). Prefer `check_attribution_tag` to confirm tx tags on a tx hash. Sponsored UserOps use the SDK [`createAAClient`](https://andrewkimjoseph.gitbook.io/celina-sdk/guides/account-abstraction) in your app — Celina MCP does not host Pimlico/gas sponsorship keys.
 
 Recommended LLM flow: quote the relevant route(s), compare `expectedOut`, then estimate and execute on the better route (or use SDK `prepareReserveSwap` / `prepare_swap` for user wallet signing on reserve swaps).
 
