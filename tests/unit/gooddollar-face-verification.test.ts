@@ -1,4 +1,7 @@
 import { createRequire } from "node:module";
+import { createPublicClient, createWalletClient, http } from "viem";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { celo } from "viem/chains";
 import { describe, expect, it, vi } from "vitest";
 import type { CeloClientFactory, CeloClients } from "../../src/clients/celo-client.js";
 import { GoodDollarFaceVerificationService } from "../../src/services/gooddollar-face-verification.service.js";
@@ -18,17 +21,45 @@ describe("GoodDollar face verification", () => {
     expect(typeof IdentitySDK.init).toBe("function");
   });
 
-  it("getFaceVerificationLink does not fail on citizen-sdk module import", async () => {
+  it("direct construction yields IdentityCustodialSDK, not base IdentitySDK", () => {
+    const citizenSdk = requireCjs("@goodsdks/citizen-sdk") as typeof import("@goodsdks/citizen-sdk");
+    const IdentitySDK = citizenSdk.IdentityCustodialSDK ?? citizenSdk.IdentitySDK;
+
+    const account = privateKeyToAccount(generatePrivateKey());
+    const publicClient = createPublicClient({
+      chain: celo,
+      transport: http("https://forno.celo.org"),
+    });
+    const wallet = createWalletClient({
+      account,
+      chain: celo,
+      transport: http("https://forno.celo.org"),
+    });
+
+    const sdk = new IdentitySDK({
+      publicClient: publicClient as never,
+      walletClient: wallet as never,
+      env: "production",
+    });
+
+    expect(sdk.constructor.name).toBe("IdentityCustodialSDK");
+  });
+
+  it("getFaceVerificationLink uses direct construction and generateFVLink", async () => {
     const generateFVLink = vi.fn().mockResolvedValue(FV_LINK);
-    const init = vi.fn().mockResolvedValue({ generateFVLink });
 
     const citizenSdk = requireCjs("@goodsdks/citizen-sdk") as typeof import("@goodsdks/citizen-sdk");
     const IdentitySDK = citizenSdk.IdentityCustodialSDK ?? citizenSdk.IdentitySDK;
-    const initSpy = vi.spyOn(IdentitySDK, "init").mockImplementation(init);
+    const ctorSpy = vi.spyOn(IdentitySDK.prototype, "generateFVLink").mockImplementation(
+      generateFVLink,
+    );
 
     const clients: CeloClients = {
       public: {} as CeloClients["public"],
-      wallet: {} as NonNullable<CeloClients["wallet"]>,
+      wallet: {
+        account: { address: TEST_WALLET },
+        chain: celo,
+      } as NonNullable<CeloClients["wallet"]>,
       accountAddress: TEST_WALLET,
     };
 
@@ -40,7 +71,6 @@ describe("GoodDollar face verification", () => {
 
     const result = await service.getFaceVerificationLink(CALLBACK_URL);
 
-    expect(initSpy).toHaveBeenCalledOnce();
     expect(generateFVLink).toHaveBeenCalledWith(false, CALLBACK_URL, 42220);
     expect(result).toEqual({
       from: TEST_WALLET,
@@ -49,6 +79,6 @@ describe("GoodDollar face verification", () => {
       network: "celo-mainnet",
     });
 
-    initSpy.mockRestore();
+    ctorSpy.mockRestore();
   });
 });

@@ -6,7 +6,7 @@ const requireCjs = createRequire(import.meta.url);
 
 /**
  * Generate a GoodDollar face verification link via @goodsdks/citizen-sdk.
- * Requires a configured wallet client for IdentitySDK.init.
+ * Requires a configured wallet client with a local account (CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY).
  */
 export class GoodDollarFaceVerificationService {
   constructor(private readonly clientFactory: CeloClientFactory) {}
@@ -22,7 +22,9 @@ export class GoodDollarFaceVerificationService {
       throw new Error("@goodsdks/citizen-sdk IdentitySDK export not found.");
     }
 
-    const sdk = await IdentitySDK.init({
+    // Use direct construction — IdentitySDK.init() always returns the base class
+    // and signs via RPC personal_sign, which Forno does not support.
+    const sdk = new IdentitySDK({
       publicClient: publicClient as never,
       walletClient: wallet as never,
       env: "production",
