@@ -52,8 +52,14 @@ export interface AppContext {
   config: {
     hasWallet: boolean;
     walletAddress?: `0x${string}`;
+    /** Default signer resolved for `walletAddress` (celo when both keys are set). */
+    signer?: "celo" | "self_agent";
     hasSelfAgentKey: boolean;
     hasCeloKey: boolean;
+    /** Main wallet address, when CELO_PRIVATE_KEY is configured. */
+    celoAddress?: `0x${string}`;
+    /** Self agent wallet address, when SELF_AGENT_PRIVATE_KEY is configured. */
+    selfAgentAddress?: `0x${string}`;
   };
   /** From celina-sdk — public RPC reads only. */
   blockchain: ReturnType<typeof createCelinaClient>["blockchain"];
@@ -118,8 +124,15 @@ export function createAppContext(
     config: {
       hasWallet: Boolean(defaultClients.accountAddress),
       walletAddress: defaultClients.accountAddress,
+      signer: defaultSigner,
       hasSelfAgentKey: Boolean(config.selfAgentPrivateKey),
       hasCeloKey: Boolean(config.privateKey),
+      celoAddress: clientFactory.hasSigner("celo")
+        ? clientFactory.getClients("celo").accountAddress
+        : undefined,
+      selfAgentAddress: clientFactory.hasSigner("self_agent")
+        ? clientFactory.getClients("self_agent").accountAddress
+        : undefined,
     },
     blockchain: sdk.blockchain,
     account: sdk.account,

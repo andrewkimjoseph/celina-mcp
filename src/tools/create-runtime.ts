@@ -5,10 +5,10 @@ import { resolveWalletAddress } from "./resolve-wallet.js";
 export function createMcpRuntime(ctx: AppContext): ToolRuntime {
   const executors: ToolRuntimeExecutors = {
     transaction: {
-      estimateSend: (to, token, amount) =>
-        ctx.transaction.estimateSend(to, token, amount),
-      sendToken: (to, token, amount) =>
-        ctx.transaction.sendToken(to, token, amount),
+      estimateSend: (to, token, amount, signer) =>
+        ctx.transaction.estimateSend(to, token, amount, signer),
+      sendToken: (to, token, amount, signer) =>
+        ctx.transaction.sendToken(to, token, amount, signer),
     },
     mentoFx: {
       estimate: (tokenIn, tokenOut, amount, options) =>
@@ -162,6 +162,15 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
       ? {
           address: ctx.config.walletAddress,
           hasWallet: ctx.config.hasWallet,
+          signer: ctx.config.signer,
+          wallets: {
+            celo: ctx.config.celoAddress
+              ? { address: ctx.config.celoAddress }
+              : undefined,
+            self_agent: ctx.config.selfAgentAddress
+              ? { address: ctx.config.selfAgentAddress }
+              : undefined,
+          },
         }
       : undefined,
     executors,

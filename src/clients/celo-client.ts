@@ -45,6 +45,13 @@ export class CeloClientFactory {
     return undefined;
   }
 
+  /** Non-throwing check: is this signer's private key configured? */
+  hasSigner(signer: SignerKind): boolean {
+    return signer === "celo"
+      ? Boolean(this.config.privateKey)
+      : Boolean(this.config.selfAgentPrivateKey);
+  }
+
   resolveSigner(signer?: SignerKind): SignerKind {
     if (signer) {
       if (signer === "celo" && !this.config.privateKey) {
