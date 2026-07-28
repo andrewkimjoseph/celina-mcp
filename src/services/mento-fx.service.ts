@@ -45,7 +45,7 @@ export class MentoFxService {
     ]);
 
     const { stepHashes, hash, status } = await executePreparedFlow(
-      clients,
+      this.clientFactory,
       prepared.steps,
     );
 

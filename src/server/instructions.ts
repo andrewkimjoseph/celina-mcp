@@ -8,7 +8,12 @@ Guidelines:
 - CELO sends use the GoldToken ERC-20 transfer (Celo token duality — same balance as native CELO). Do not use a separate native-value send for CELO.
 - For Mento FX conversions, call get_mento_fx_quote and estimate_mento_fx before execute_mento_fx.
 - For Uniswap v4 swaps, call get_uniswap_quote and estimate_uniswap_swap before execute_uniswap_swap.
-- Write tools require CELO_PRIVATE_KEY in the server environment.
+- Write tools require CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY in the server environment. Humanness-gated governance/staking execute tools accept optional signer: "celo" | "self_agent" (defaults to CELO when both are set).
+- Humanness: call check_humanness before execute_lock_celo, execute_stake, execute_vote, etc. Passes if Self agent OR GoodDollar whitelist succeeds for the signing address.
+- Celo Accounts: get_celo_account_registration before locking CELO. Unregistered addresses must call execute_register_celo_account or prepare_register_celo_account first.
+- Governance writes: execute_lock_celo, execute_unlock_celo, execute_relock_celo, execute_withdraw_celo, execute_vote (humanness-gated). Use get_votable_proposals for Referendum proposals and dequeue index.
+- Staking writes: execute_stake, execute_activate_stake, execute_unstake, execute_delegate_power, execute_undelegate_power (humanness-gated).
+- GoodDollar wallet-link: get_gooddollar_face_verification_link, execute_connect_gooddollar_identity, execute_disconnect_gooddollar_identity.
 - Session wallet (local stdio with CELO_PRIVATE_KEY): call get_wallet_address when you need the signer address as data. For "my" balances and reads, omit address / wallet_address / from on wallet-scoped tools — they default to the configured signer. Never derive addresses from shell commands or read .env. On hosted read-only (no key), pass explicit addresses.
 - Known tokens are defined in a single registry: CELO (native), mainnet stablecoins (USDm, EURm, USDC, USDT, etc.), and GoodDollar.
 - Balance tools (registry only — not arbitrary ERC-20 contracts): get_stablecoin_balances for a full stablecoin portfolio scan; get_celo_balances for specific named registry tokens (incl. CELO, WETH); get_token_balance for one registry token (e.g. before send-all/max). Omit address to use the configured signer when CELO_PRIVATE_KEY is set. Balance reads use the literal address only — they do not resolve GoodDollar connected-wallet identity roots.

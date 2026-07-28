@@ -37,7 +37,7 @@ export class TransactionService {
     const { accountAddress: from } = clients;
 
     const prepared = await this.sdk.transaction.prepareSend(from, to, token, amount);
-    const { hash, status } = await executePreparedFlow(clients, prepared.steps);
+    const { hash, status } = await executePreparedFlow(this.clientFactory, prepared.steps);
 
     const resolved = await this.sdk.token.resolveToken(token);
 

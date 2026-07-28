@@ -1,11 +1,13 @@
 import { simulatePreparedStep, type PreparedTx } from "@andrewkimjoseph/celina-sdk/simulation";
 import { type Hex } from "viem";
-import type { CeloClients } from "../clients/celo-client.js";
+import type { CeloClients, SignerKind } from "../clients/celo-client.js";
+import type { CeloClientFactory } from "../clients/celo-client.js";
 
 export interface ExecutedPreparedFlow {
   stepHashes: `0x${string}`[];
   hash: `0x${string}`;
   status: "success" | "reverted";
+  signerAddress: `0x${string}`;
 }
 
 export function requireWalletClients(clients: CeloClients): CeloClients & {
@@ -14,7 +16,7 @@ export function requireWalletClients(clients: CeloClients): CeloClients & {
 } {
   if (!clients.wallet || !clients.accountAddress) {
     throw new Error(
-      "No wallet configured. Set CELO_PRIVATE_KEY in the MCP server env.",
+      "No wallet configured. Set CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY in the MCP server env.",
     );
   }
 
@@ -26,14 +28,16 @@ export function requireWalletClients(clients: CeloClients): CeloClients & {
 }
 
 /**
- * Sign and broadcast prepared SDK steps sequentially with the MCP server wallet.
+ * Sign and broadcast prepared SDK steps sequentially with the selected MCP wallet.
  * Prepared steps already include the CELINA calldata suffix.
  */
 export async function executePreparedFlow(
-  clients: CeloClients,
+  clientFactory: CeloClientFactory,
   steps: PreparedTx[],
+  signer?: SignerKind,
 ): Promise<ExecutedPreparedFlow> {
-  const { wallet, public: publicClient } = requireWalletClients(clients);
+  const clients = requireWalletClients(clientFactory.getClients(signer));
+  const { wallet, public: publicClient, accountAddress } = clients;
 
   const account = wallet.account;
   if (!account) {
@@ -76,5 +80,6 @@ export async function executePreparedFlow(
     stepHashes,
     hash,
     status: receipt.status,
+    signerAddress: accountAddress,
   };
 }

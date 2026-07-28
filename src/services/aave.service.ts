@@ -20,7 +20,10 @@ export class AaveService {
     const asset = resolveAaveAsset(token);
 
     const prepared = await this.sdk.aave.prepareSupply(from, token, amount);
-    const { stepHashes, hash } = await executePreparedFlow(clients, prepared.steps);
+    const { stepHashes, hash } = await executePreparedFlow(
+      this.clientFactory,
+      prepared.steps,
+    );
 
     return {
       from,
@@ -48,7 +51,7 @@ export class AaveService {
       amount,
       withdrawMax,
     );
-    const { hash } = await executePreparedFlow(clients, prepared.steps);
+    const { hash } = await executePreparedFlow(this.clientFactory, prepared.steps);
 
     return {
       from,

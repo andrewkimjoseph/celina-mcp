@@ -30,7 +30,7 @@ export class GoodDollarWriteService {
 
     const eligibility = await this.sdk.gooddollar.getUbiClaimEligibility(from);
     const prepared = await this.sdk.gooddollar.prepareClaimUbi(from);
-    const { hash } = await executePreparedFlow(clients, prepared.steps);
+    const { hash } = await executePreparedFlow(this.clientFactory, prepared.steps);
 
     const receipt = await clients.public.waitForTransactionReceipt({ hash });
     let amountClaimed: string | undefined;
@@ -103,7 +103,7 @@ export class GoodDollarWriteService {
     ]);
 
     const { stepHashes, hash, status } = await executePreparedFlow(
-      clients,
+      this.clientFactory,
       prepared.steps,
     );
 

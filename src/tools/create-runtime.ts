@@ -66,6 +66,40 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
           slippageTolerance: options?.slippageTolerance,
         }),
     },
+    gooddollarIdentity: {
+      getFaceVerificationLink: (callbackUrl) =>
+        ctx.gooddollarFaceVerification.getFaceVerificationLink(callbackUrl),
+    },
+    gooddollarIdentityWrite: {
+      connectIdentity: (connectedAccount, signer) =>
+        ctx.gooddollarIdentityWrite.connectIdentity(connectedAccount, signer),
+      disconnectIdentity: (connectedAccount, signer) =>
+        ctx.gooddollarIdentityWrite.disconnectIdentity(connectedAccount, signer),
+    },
+    governanceWrite: {
+      lockCelo: (amount, signer) => ctx.governanceWrite.lockCelo(amount, signer),
+      unlockCelo: (amount, signer) => ctx.governanceWrite.unlockCelo(amount, signer),
+      relockCelo: (index, amount, signer) =>
+        ctx.governanceWrite.relockCelo(index, amount, signer),
+      withdrawCelo: (signer) => ctx.governanceWrite.withdrawCelo(signer),
+      vote: (proposalId, vote, signer) =>
+        ctx.governanceWrite.vote(proposalId, vote, signer),
+    },
+    stakingWrite: {
+      stake: (groupAddress, amount, signer) =>
+        ctx.stakingWrite.stake(groupAddress, amount, signer),
+      activateStake: (groupAddress, signer) =>
+        ctx.stakingWrite.activateStake(groupAddress, signer),
+      unstake: (groupAddress, amount, signer) =>
+        ctx.stakingWrite.unstake(groupAddress, amount, signer),
+      delegatePower: (delegatee, percent, signer) =>
+        ctx.stakingWrite.delegatePower(delegatee, percent, signer),
+      undelegatePower: (delegatee, percent, signer) =>
+        ctx.stakingWrite.undelegatePower(delegatee, percent, signer),
+    },
+    accountWrite: {
+      registerAccount: (signer) => ctx.accountWrite.registerAccount(signer),
+    },
     self: {
       verifyAgent: (args) =>
         ctx.self.verifyAgent({

@@ -12,6 +12,8 @@ import { CHAIN, DEFAULT_RPC_URL } from "@andrewkimjoseph/celina-sdk";
 
 const chain = CHAIN as Chain;
 
+export type SignerKind = "celo" | "self_agent";
+
 export interface CeloClients {
   public: PublicClient;
   wallet?: WalletClient;
@@ -19,41 +21,90 @@ export interface CeloClients {
 }
 
 export class CeloClientFactory {
-  private clients: CeloClients | null = null;
+  private publicClient: PublicClient | null = null;
+  private walletClients = new Map<SignerKind, CeloClients>();
 
   constructor(private readonly config: AppConfig) {}
 
-  getClients(): CeloClients {
-    if (this.clients) {
-      return this.clients;
+  getPublicClient(): PublicClient {
+    if (this.publicClient) return this.publicClient;
+
+    const rpcUrl = this.config.rpcUrl ?? DEFAULT_RPC_URL;
+    this.publicClient = createPublicClient({
+      chain,
+      transport: http(rpcUrl),
+    }) as PublicClient;
+
+    return this.publicClient;
+  }
+
+  /** Default signer: CELO_PRIVATE_KEY when set, otherwise SELF_AGENT_PRIVATE_KEY. */
+  getDefaultSigner(): SignerKind | undefined {
+    if (this.config.privateKey) return "celo";
+    if (this.config.selfAgentPrivateKey) return "self_agent";
+    return undefined;
+  }
+
+  resolveSigner(signer?: SignerKind): SignerKind {
+    if (signer) {
+      if (signer === "celo" && !this.config.privateKey) {
+        throw new Error("CELO_PRIVATE_KEY is not configured.");
+      }
+      if (signer === "self_agent" && !this.config.selfAgentPrivateKey) {
+        throw new Error("SELF_AGENT_PRIVATE_KEY is not configured.");
+      }
+      return signer;
     }
+
+    const defaultSigner = this.getDefaultSigner();
+    if (!defaultSigner) {
+      throw new Error(
+        "No signing key configured. Set CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY.",
+      );
+    }
+    return defaultSigner;
+  }
+
+  getClients(signer?: SignerKind): CeloClients {
+    const resolved = this.resolveSigner(signer);
+    const cached = this.walletClients.get(resolved);
+    if (cached) return cached;
 
     const rpcUrl = this.config.rpcUrl ?? DEFAULT_RPC_URL;
     const transport = http(rpcUrl);
-    const publicClient = createPublicClient({
-      chain,
-      transport,
-    }) as PublicClient;
+    const publicClient = this.getPublicClient();
 
-    let wallet: WalletClient | undefined;
-    let accountAddress: `0x${string}` | undefined;
+    const privateKey =
+      resolved === "celo"
+        ? this.config.privateKey
+        : this.config.selfAgentPrivateKey;
 
-    if (this.config.privateKey) {
-      const account = privateKeyToAccount(this.config.privateKey);
-      accountAddress = account.address;
-      wallet = createWalletClient({
-        account,
-        chain,
-        transport,
-      });
+    if (!privateKey) {
+      return { public: publicClient };
     }
 
-    this.clients = {
+    const account = privateKeyToAccount(privateKey);
+    const wallet = createWalletClient({
+      account,
+      chain,
+      transport,
+    });
+
+    const clients: CeloClients = {
       public: publicClient,
       wallet,
-      accountAddress,
+      accountAddress: account.address,
     };
 
-    return this.clients;
+    this.walletClients.set(resolved, clients);
+    return clients;
+  }
+
+  /** Legacy accessor — returns CELO wallet when configured. */
+  getClientsLegacy(): CeloClients {
+    if (this.config.privateKey) {
+      return this.getClients("celo");
+    }
+    return { public: this.getPublicClient() };
   }
 }

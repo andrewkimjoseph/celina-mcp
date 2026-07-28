@@ -66,7 +66,7 @@ export class UniswapService {
     );
 
     const { stepHashes, hash, status } = await executePreparedFlow(
-      clients,
+      this.clientFactory,
       prepared.steps,
     );
     const quote = await this.sdk.uniswap.getSwapQuote(tokenIn, tokenOut, amount);

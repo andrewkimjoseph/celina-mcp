@@ -26,7 +26,10 @@ export type CreateServerOptions = {
 export function createServer(options: CreateServerOptions = {}): McpServer {
   const config = loadConfig();
   const clientFactory = new CeloClientFactory(config);
-  const clients = clientFactory.getClients();
+  const defaultSigner = clientFactory.getDefaultSigner();
+  const clients = defaultSigner
+    ? clientFactory.getClients(defaultSigner)
+    : { public: clientFactory.getPublicClient() };
 
   const server = new McpServer(
     { name: "celina-mcp", version },

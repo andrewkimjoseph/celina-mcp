@@ -28,7 +28,7 @@ export class ContractWriteService {
       functionArgs: params.functionArgs,
       value: params.value,
     });
-    const { hash, status } = await executePreparedFlow(clients, prepared.steps);
+    const { hash, status } = await executePreparedFlow(this.clientFactory, prepared.steps);
 
     return {
       network: "mainnet" as const,
