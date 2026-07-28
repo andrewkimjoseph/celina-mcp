@@ -1,5 +1,8 @@
+import { createRequire } from "node:module";
 import { requireWalletClients } from "./execute-prepared-flow.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
+
+const requireCjs = createRequire(import.meta.url);
 
 /**
  * Generate a GoodDollar face verification link via @goodsdks/citizen-sdk.
@@ -13,7 +16,7 @@ export class GoodDollarFaceVerificationService {
       this.clientFactory.getClients(),
     );
 
-    const citizenSdk = await import("@goodsdks/citizen-sdk");
+    const citizenSdk = requireCjs("@goodsdks/citizen-sdk") as typeof import("@goodsdks/citizen-sdk");
     const IdentitySDK = citizenSdk.IdentityCustodialSDK ?? citizenSdk.IdentitySDK;
     if (!IdentitySDK) {
       throw new Error("@goodsdks/citizen-sdk IdentitySDK export not found.");
