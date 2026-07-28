@@ -124,6 +124,7 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
           mode: args.mode as never,
           minimumAge: args.minimum_age as 0 | 18 | 21 | undefined,
           ofac: args.ofac as boolean | undefined,
+          nationality: args.nationality as boolean | undefined,
           humanAddress: args.human_address as `0x${string}` | undefined,
           agentName: args.agent_name as string | undefined,
           agentDescription: args.agent_description as string | undefined,
