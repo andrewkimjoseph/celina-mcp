@@ -133,7 +133,10 @@ export function createAppContext(
     gooddollar: sdk.gooddollar,
     gooddollarWrite: new GoodDollarWriteService(clientFactory, sdk),
     gooddollarIdentityWrite: new GoodDollarIdentityWriteService(clientFactory, sdk),
-    gooddollarFaceVerification: new GoodDollarFaceVerificationService(clientFactory),
+    gooddollarFaceVerification: new GoodDollarFaceVerificationService(
+      clientFactory,
+      sdk.gooddollar,
+    ),
     governanceWrite: new GovernanceWriteService(clientFactory, sdk),
     stakingWrite: new StakingWriteService(clientFactory, sdk),
     accountWrite: new AccountWriteService(clientFactory, sdk),
