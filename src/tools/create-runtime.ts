@@ -84,6 +84,11 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
       withdrawCelo: (signer) => ctx.governanceWrite.withdrawCelo(signer),
       vote: (proposalId, vote, signer) =>
         ctx.governanceWrite.vote(proposalId, vote, signer),
+      upvote: (proposalId, signer) => ctx.governanceWrite.upvote(proposalId, signer),
+      revokeGovernanceVotes: (signer) =>
+        ctx.governanceWrite.revokeGovernanceVotes(signer),
+      revokeGovernanceUpvote: (proposalId, signer) =>
+        ctx.governanceWrite.revokeGovernanceUpvote(proposalId, signer),
     },
     stakingWrite: {
       stake: (groupAddress, amount, signer) =>

@@ -66,4 +66,22 @@ export class GovernanceWriteService {
       this.sdk.governance.prepareVote(from, proposalId, vote),
     );
   }
+
+  upvote(proposalId: number, signer?: SignerKind) {
+    return this.executeHumannessGated(signer, (from) =>
+      this.sdk.governance.prepareUpvote(from, proposalId),
+    );
+  }
+
+  revokeGovernanceVotes(signer?: SignerKind) {
+    return this.executeHumannessGated(signer, (from) =>
+      this.sdk.governance.prepareRevokeGovernanceVotes(from),
+    );
+  }
+
+  revokeGovernanceUpvote(proposalId?: number, signer?: SignerKind) {
+    return this.executeHumannessGated(signer, (from) =>
+      this.sdk.governance.prepareRevokeGovernanceUpvote(from, { proposalId }),
+    );
+  }
 }
