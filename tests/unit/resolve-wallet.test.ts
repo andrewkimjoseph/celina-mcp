@@ -31,7 +31,7 @@ describe("resolveWalletAddress", () => {
 
   it("throws when no explicit address and no configured wallet", () => {
     expect(() => resolveWalletAddress(ctxWithWallet())).toThrow(
-      /No wallet configured/,
+      /Set CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY/,
     );
   });
 });

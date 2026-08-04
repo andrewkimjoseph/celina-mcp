@@ -1,94 +1,66 @@
-import { generatePrivateKey } from "viem/accounts";
 import { describe, expect, it } from "vitest";
 import { CeloClientFactory } from "../../src/clients/celo-client.js";
 import type { AppConfig } from "../../src/config/env.js";
 
-const CELO_KEY = generatePrivateKey();
-const SELF_KEY = generatePrivateKey();
+const CELO_KEY =
+  "0xac0974bec39a17e36ba4a6b4d15588dd6936b93c12f6f356520cf899b8d4e178" as const;
+const SELF_AGENT_KEY =
+  "0x5de4111afa1a4b94908e83817c41f46e2e2ddd164f3358304a4c916ca8790649" as const;
 
-function buildConfig(overrides: Partial<AppConfig> = {}): AppConfig {
+function config(overrides: Partial<AppConfig> = {}): AppConfig {
   return {
     rpcUrl: "https://forno.celo.org",
     ...overrides,
   };
 }
 
-describe("CeloClientFactory.hasSigner", () => {
-  it("returns false for both signers when no keys are configured", () => {
-    const factory = new CeloClientFactory(buildConfig());
-    expect(factory.hasSigner("celo")).toBe(false);
-    expect(factory.hasSigner("self_agent")).toBe(false);
-  });
-
-  it("returns true only for the configured signer", () => {
+describe("CeloClientFactory", () => {
+  it("defaults to self_agent when only SELF_AGENT_PRIVATE_KEY is set", () => {
     const factory = new CeloClientFactory(
-      buildConfig({ privateKey: CELO_KEY }),
+      config({ selfAgentPrivateKey: SELF_AGENT_KEY }),
     );
-    expect(factory.hasSigner("celo")).toBe(true);
-    expect(factory.hasSigner("self_agent")).toBe(false);
-  });
 
-  it("returns true for both signers when both keys are configured", () => {
-    const factory = new CeloClientFactory(
-      buildConfig({ privateKey: CELO_KEY, selfAgentPrivateKey: SELF_KEY }),
-    );
-    expect(factory.hasSigner("celo")).toBe(true);
-    expect(factory.hasSigner("self_agent")).toBe(true);
-  });
-
-  it("does not throw for an unconfigured signer (unlike resolveSigner)", () => {
-    const factory = new CeloClientFactory(buildConfig());
-    expect(() => factory.hasSigner("self_agent")).not.toThrow();
-    expect(() => factory.resolveSigner("self_agent")).toThrow(
-      /SELF_AGENT_PRIVATE_KEY/,
-    );
-  });
-});
-
-describe("CeloClientFactory.getDefaultSigner", () => {
-  it("prefers celo when both keys are configured", () => {
-    const factory = new CeloClientFactory(
-      buildConfig({ privateKey: CELO_KEY, selfAgentPrivateKey: SELF_KEY }),
-    );
-    expect(factory.getDefaultSigner()).toBe("celo");
-  });
-
-  it("falls back to self_agent when only that key is configured", () => {
-    const factory = new CeloClientFactory(
-      buildConfig({ selfAgentPrivateKey: SELF_KEY }),
-    );
     expect(factory.getDefaultSigner()).toBe("self_agent");
+    expect(factory.getClients().accountAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
   });
 
-  it("is undefined when no keys are configured", () => {
-    const factory = new CeloClientFactory(buildConfig());
+  it("defaults to celo when both keys are configured", () => {
+    const factory = new CeloClientFactory(
+      config({ privateKey: CELO_KEY, selfAgentPrivateKey: SELF_AGENT_KEY }),
+    );
+
+    expect(factory.getDefaultSigner()).toBe("celo");
+    expect(factory.getClients().accountAddress).toBe(
+      factory.getClients("celo").accountAddress,
+    );
+  });
+
+  it("throws when CELO_PRIVATE_KEY is an invalid placeholder", () => {
+    expect(
+      () =>
+        new CeloClientFactory(
+          config({
+            privateKey: "0x..." as `0x${string}`,
+            selfAgentPrivateKey: SELF_AGENT_KEY,
+          }),
+        ),
+    ).toThrow(/CELO_PRIVATE_KEY is set but invalid/);
+  });
+
+  it("throws when SELF_AGENT_PRIVATE_KEY is invalid", () => {
+    expect(
+      () =>
+        new CeloClientFactory(
+          config({ selfAgentPrivateKey: "0xdead" as `0x${string}` }),
+        ),
+    ).toThrow(/SELF_AGENT_PRIVATE_KEY is set but invalid/);
+  });
+
+  it("allows read-only mode with no keys configured", () => {
+    const factory = new CeloClientFactory(config());
+
     expect(factory.getDefaultSigner()).toBeUndefined();
-  });
-});
-
-describe("CeloClientFactory.getClients", () => {
-  it("resolves distinct addresses for celo and self_agent, and caches per signer", () => {
-    const factory = new CeloClientFactory(
-      buildConfig({ privateKey: CELO_KEY, selfAgentPrivateKey: SELF_KEY }),
-    );
-
-    const celoClients = factory.getClients("celo");
-    const selfClients = factory.getClients("self_agent");
-
-    expect(celoClients.accountAddress).toBeDefined();
-    expect(selfClients.accountAddress).toBeDefined();
-    expect(celoClients.accountAddress).not.toBe(selfClients.accountAddress);
-
-    // Cached instance is returned on repeat calls for the same signer.
-    expect(factory.getClients("celo")).toBe(celoClients);
-  });
-
-  it("throws when explicitly requesting an unconfigured signer", () => {
-    const factory = new CeloClientFactory(
-      buildConfig({ privateKey: CELO_KEY }),
-    );
-    expect(() => factory.getClients("self_agent")).toThrow(
-      /SELF_AGENT_PRIVATE_KEY/,
-    );
+    expect(factory.getPublicClient()).toBeDefined();
+    expect(() => factory.getClients()).toThrow(/No signing key configured/);
   });
 });

@@ -11,6 +11,6 @@ export function resolveWalletAddress(
     return ctx.config.walletAddress;
   }
   throw new Error(
-    "No wallet configured. Set CELO_PRIVATE_KEY in the server env, or pass an explicit address.",
+    "No wallet configured. Set CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY in the server env, or pass an explicit address.",
   );
 }
