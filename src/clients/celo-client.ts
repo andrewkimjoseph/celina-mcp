@@ -12,19 +12,6 @@ import { CHAIN, DEFAULT_RPC_URL } from "@andrewkimjoseph/celina-sdk";
 
 const chain = CHAIN as Chain;
 
-const PRIVATE_KEY_HEX_RE = /^0x[a-fA-F0-9]{64}$/;
-
-function assertValidPrivateKey(envName: string, key: string | undefined): void {
-  if (key === undefined || key.trim() === "") {
-    return;
-  }
-  if (!PRIVATE_KEY_HEX_RE.test(key.trim())) {
-    throw new Error(
-      `${envName} is set but invalid (expected 0x followed by 64 hex characters). Remove it or fix it.`,
-    );
-  }
-}
-
 export type SignerKind = "celo" | "self_agent";
 
 export interface CeloClients {
@@ -37,10 +24,7 @@ export class CeloClientFactory {
   private publicClient: PublicClient | null = null;
   private walletClients = new Map<SignerKind, CeloClients>();
 
-  constructor(private readonly config: AppConfig) {
-    assertValidPrivateKey("CELO_PRIVATE_KEY", config.privateKey);
-    assertValidPrivateKey("SELF_AGENT_PRIVATE_KEY", config.selfAgentPrivateKey);
-  }
+  constructor(private readonly config: AppConfig) {}
 
   getPublicClient(): PublicClient {
     if (this.publicClient) return this.publicClient;

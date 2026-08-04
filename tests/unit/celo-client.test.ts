@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parsePrivateKeyEnv } from "@andrewkimjoseph/celina-sdk";
 import { CeloClientFactory } from "../../src/clients/celo-client.js";
 import type { AppConfig } from "../../src/config/env.js";
 
@@ -36,24 +37,40 @@ describe("CeloClientFactory", () => {
   });
 
   it("throws when CELO_PRIVATE_KEY is an invalid placeholder", () => {
-    expect(
-      () =>
-        new CeloClientFactory(
-          config({
-            privateKey: "0x..." as `0x${string}`,
-            selfAgentPrivateKey: SELF_AGENT_KEY,
-          }),
+    const factory = new CeloClientFactory(
+      config({
+        privateKey: "0x..." as `0x${string}`,
+        selfAgentPrivateKey: SELF_AGENT_KEY,
+      }),
+    );
+
+    expect(() => factory.getClients("celo")).toThrow();
+  });
+
+  it("accepts Self agent key without 0x prefix", () => {
+    const withPrefix = new CeloClientFactory(
+      config({ selfAgentPrivateKey: SELF_AGENT_KEY }),
+    );
+    const withoutPrefix = new CeloClientFactory(
+      config({
+        selfAgentPrivateKey: parsePrivateKeyEnv(
+          SELF_AGENT_KEY.slice(2),
+          "SELF_AGENT_PRIVATE_KEY",
         ),
-    ).toThrow(/CELO_PRIVATE_KEY is set but invalid/);
+      }),
+    );
+
+    expect(withoutPrefix.getClients().accountAddress).toBe(
+      withPrefix.getClients().accountAddress,
+    );
   });
 
   it("throws when SELF_AGENT_PRIVATE_KEY is invalid", () => {
-    expect(
-      () =>
-        new CeloClientFactory(
-          config({ selfAgentPrivateKey: "0xdead" as `0x${string}` }),
-        ),
-    ).toThrow(/SELF_AGENT_PRIVATE_KEY is set but invalid/);
+    const factory = new CeloClientFactory(
+      config({ selfAgentPrivateKey: "0xdead" as `0x${string}` }),
+    );
+
+    expect(() => factory.getClients()).toThrow();
   });
 
   it("allows read-only mode with no keys configured", () => {
