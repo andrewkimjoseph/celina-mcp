@@ -64,6 +64,8 @@ Install the package, then add Celina to your MCP config. Your client spawns `npx
 
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
+Private keys accept **64 hex characters with or without a `0x` prefix** (normalized at startup). Do not leave placeholder values like `0x...` in config — they fail validation and block MCP startup. **Self-only** setups can use **`SELF_AGENT_PRIVATE_KEY` alone** (omit `CELO_PRIVATE_KEY`) for governance/staking when the Self agent passes humanness.
+
 **Read telemetry:** Off-chain tool usage is logged via the bundled Celina SDK. Each MCP install gets a stable `device_id` (`~/.config/celina/install-id`) so stats can distinguish hosts; wallet-scoped reads also set Amplitude `user_id` to the public wallet address (from tool args or the `CELO_PRIVATE_KEY` signer). Opt out or override via `createServer({ analyticsEnabled: false, analyticsDeviceId: "..." })` when embedding the server programmatically.
 
 ### Claude Desktop
@@ -199,9 +201,9 @@ A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (
 
 The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all `get_*` tools (including `get_aave_balances`), `resolve_ens`, `get_mento_fx_quote`, `get_uniswap_quote`, `get_gooddollar_whitelisting_info`, `get_gooddollar_ubi_entitlement`, `get_gooddollar_reserve_quote`, `get_gas_fee_data`, `verify_self_agent`, `lookup_self_agent`, `get_agentkarma_reputation`, `get_agentkarma_celo_agent`, `check_agentkarma_counterparty`, governance/staking/NFT/contract reads, etc.
+**Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
 
-**Hosted MCP:** **36 tools** — reads, oracle/AMM quotes, attribution check/verify, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_mento_fx`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
+**Hosted MCP:** **44 tools** — reads, oracle/AMM quotes, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -209,19 +211,21 @@ See [celina-mcp-host/README.md](../celina-mcp-host/README.md) if you want to dep
 
 ## Write tools
 
-Set `CELO_PRIVATE_KEY` in your MCP server `env` block for on-chain writes (`send_token`, `estimate_send`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_contract_function`). Use `SELF_AGENT_PRIVATE_KEY` for Self agent signing tools. Keys stay on your machine and are not sent to Celina's authors.
+Set `CELO_PRIVATE_KEY` and/or `SELF_AGENT_PRIVATE_KEY` in your MCP server `env` block for on-chain writes. Pass optional `signer: "celo" | "self_agent"` when both keys are configured. Stdio writes include: `send_token`, DeFi executes (`execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`), governance (`execute_lock_celo`, `execute_vote`, `execute_upvote`, …), staking (`execute_stake`, `execute_activate_stake`, …), `execute_register_celo_account`, GoodDollar UBI/identity writes, and `execute_contract_function`. Humanness-gated governance/staking executes require `check_humanness` to pass first. Keys stay on your machine and are not sent to Celina's authors.
 
 ## Session wallet (local stdio)
 
-When `CELO_PRIVATE_KEY` is set, the server derives a **session wallet** at startup (`privateKeyToAccount` → `ctx.config.walletAddress`). Agents should use it like this:
+When a signing key is configured, the server derives session wallet(s) at startup. Agents should use them like this:
 
-1. **`get_wallet_address`** — returns the signer when you need the address as data (empty input).
-2. **Omit `address` / `wallet_address` / `from`** on wallet-scoped reads for “my” balances and activity.
-3. **Never** derive addresses from shell or read `.env`.
+1. **`get_wallet_address`** — with no `signer`, returns the default address plus **`wallets.celo`** and **`wallets.self_agent`** when both keys are set; pass `signer` to look up one wallet.
+2. **Default signer:** `celo` when `CELO_PRIVATE_KEY` is set (even if Self key is also set); `self_agent` when only `SELF_AGENT_PRIVATE_KEY` is configured.
+3. **Omit `address` / `wallet_address` / `from`** on wallet-scoped reads for “my” balances and activity (uses default signer).
+4. **Pass `signer: "celo" | "self_agent"`** on execute tools (send, governance, staking, account register, GoodDollar connect/disconnect) to choose which configured wallet acts.
+5. **Never** derive addresses from shell or read `.env`.
 
-Wallet-scoped tools with optional address: `get_account`, token balance tools, staking reads, GoodDollar reads, `get_nft_balance`, `estimate_transaction` (`from` only), contract reads (`fromAddress`). `execute_contract_function` uses the session signer (no address arg).
+Wallet-scoped tools with optional address: `get_account`, token balance tools, staking/governance reads, GoodDollar reads, `get_nft_balance`, `estimate_transaction` (`from` only), contract reads (`fromAddress`).
 
-On **hosted** MCP (no key), pass explicit addresses. `get_wallet_address` returns an error without a configured key.
+On **hosted** MCP (no key), pass explicit addresses. `get_wallet_address` is omitted from the hosted tool list.
 
 Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) filter the same tool catalog with `surface: "browser"` and pass the user’s connected wallet on each call — see [tool catalog guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md) and [MCP session wallet guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/mcp-session-wallet.md).
 
@@ -229,10 +233,11 @@ Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CELO_PRIVATE_KEY` | — | Write tools (send, Mento FX, Uniswap v4, Aave, GoodDollar UBI claim) |
-| `SELF_AGENT_PRIVATE_KEY` | — | Self Agent ID signing/identity tools (separate from CELO wallet) |
+| `CELO_PRIVATE_KEY` | — | Main wallet for writes (send, DeFi, governance, staking, GoodDollar UBI). 64 hex chars, optional `0x` prefix. |
+| `SELF_AGENT_PRIVATE_KEY` | — | Self Agent ID wallet (separate from CELO). Can be used alone for humanness-gated governance/staking. Optional `0x` prefix. |
 | `SELF_AGENT_API_BASE` | `https://app.ai.self.xyz` | Override Self Agent ID REST API base URL |
 | `CELO_RPC_URL_MAINNET` | Forno public RPC | Override mainnet RPC |
+| `ETH_RPC_URL_MAINNET` | — | Ethereum RPC for ENS resolution |
 
 **Account Abstraction / gas sponsorship:** Celina MCP does **not** take a Pimlico (or other) sponsorship API key. Sponsored UserOps use `@andrewkimjoseph/celina-sdk` [`createAAClient`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/account-abstraction.md) in your app with **your** `gasSponsorship` provider credentials. Stdio `execute_*` remains EOA-only via `CELO_PRIVATE_KEY`.
 
@@ -256,66 +261,71 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 
 ## Tools
 
-| Tool | Type | Description |
-|------|------|-------------|
-| `get_network_status` | read | Mainnet chain ID, block, gas price |
-| `get_block` | read | Block by number/hash/latest (optional `includeTransactions`) |
-| `get_latest_blocks` | read | Recent blocks (optional `offset`, up to 100) |
-| `get_transaction` | read | Tx + receipt |
-| `check_attribution_tag` | read | Prefer: all ERC-8021 `tags` in lowercase (includes `celina`, mirrors `erc8021.codes`) or confirm one tag on a tx |
-| `verify_attribution_tag` | read | Raw legacy + ERC-8021 attribution decode for a tx |
-| `get_wallet_address` | read | Signer address from `CELO_PRIVATE_KEY` (stdio) |
-| `get_account` | read | CELO balance, nonce (omit `address` for configured signer) |
-| `resolve_ens` | read | Resolve Celo or Ethereum ENS name |
-| `get_celo_balances` | read | Named registry token balances (default: CELO + USDm) |
-| `get_stablecoin_balances` | read | Scan all registry stablecoins; omits zero balances by default |
-| `get_token_info` | read | Registry token metadata (no balance read) |
-| `get_token_balance` | read | Single registry token balance (symbol or known registry address) |
-| `get_gas_fee_data` | read | Current gas fees (EIP-1559 when supported) |
-| `estimate_transaction` | read | Generic tx gas estimate (from/to/value/data) |
-| `estimate_send` | read* | Token send gas estimate (*needs `CELO_PRIVATE_KEY`) |
-| `send_token` | write | Send CELO or ERC-20 |
-| `get_mento_fx_quote` | read | Mento FX expected output (no wallet) |
-| `estimate_mento_fx` | read* | Mento FX gas estimate (*needs `CELO_PRIVATE_KEY`) |
-| `execute_mento_fx` | write | Execute Mento FX conversion |
-| `get_uniswap_quote` | read | Uniswap v4 expected output (no wallet) |
-| `estimate_uniswap_swap` | read* | Uniswap v4 gas estimate incl. Permit2 approvals (*needs `CELO_PRIVATE_KEY`) |
-| `execute_uniswap_swap` | write | Execute Uniswap v4 swap (Universal Router + Permit2) |
-| `get_aave_balances` | read | Supplied Aave V3 positions (aToken balances) on Celo |
-| `supply_aave` | write | Supply tokens to Aave V3 on Celo (USDT, WETH, USDm, USDC, CELO, EURm) |
-| `withdraw_aave` | write | Withdraw tokens from Aave V3 on Celo |
-| `get_gooddollar_whitelisting_info` | read | GoodDollar IdentityV4 whitelist status (connected wallets resolve to root) |
-| `get_gooddollar_identity_link` | read | GoodDollar IdentityV4 link graph (root, connectedTo) |
-| `get_gooddollar_ubi_entitlement` | read | Daily UBI claim eligibility (amount, whitelist root, reasons) |
-| `get_gooddollar_reserve_quote` | read | G$ ↔ USDm quote via GoodDollar MentoBroker reserve (bonding curve) |
-| `estimate_gooddollar_reserve_swap` | read* | Reserve swap gas estimate (*needs `CELO_PRIVATE_KEY`) |
-| `execute_gooddollar_reserve_swap` | write | Execute G$ ↔ USDm reserve swap via MentoBroker |
-| `claim_daily_gooddollar_ubi` | write | Claim today's GoodDollar UBI (G$) for the MCP server wallet |
-| `get_governance_proposals` | read | Celo governance proposals (paginated) |
-| `get_proposal_details` | read | Governance proposal details + CGP content |
-| `get_staking_balances` | read | Staking votes by validator group |
-| `get_activatable_stakes` | read | Pending stakes ready to activate |
-| `get_validator_groups` | read | Validator groups (paginated) |
-| `get_validator_group_details` | read | Single validator group details |
-| `get_total_staking_info` | read | Network-wide staking totals |
-| `get_nft_info` | read | NFT token info + metadata |
-| `get_nft_balance` | read | NFT balance (ERC-721 or ERC-1155) |
-| `call_contract_function` | read | Read-only contract call (caller ABI) |
-| `estimate_contract_gas` | read | Contract function gas estimate (caller ABI) |
-| `execute_contract_function` | write | State-changing contract call (caller ABI; requires `CELO_PRIVATE_KEY`) |
-| `verify_self_agent` | read | Verify Self Agent ID on-chain by address |
-| `lookup_self_agent` | read | Look up Self agent by numeric ID (ai.self.xyz) |
-| `verify_self_request` | read | Verify signed Self Agent HTTP request headers |
-| `register_self_agent` | write | Start Self agent registration (QR/deep link) |
-| `check_self_registration` | read* | Poll registration/refresh/deregister session (*may return private key) |
-| `get_self_identity` | read* | Current Self agent identity (*needs agent key) |
-| `refresh_self_proof` | write | Renew human proof after on-chain expiry (`isProofFresh` false) |
-| `deregister_self_agent` | write | Irreversibly revoke Self agent identity |
-| `sign_self_request` | read* | Sign HTTP request with Self agent headers (*needs agent key) |
-| `authenticated_self_fetch` | write | HTTP fetch with Self agent auth (*needs agent key) |
-| `get_agentkarma_reputation` | read | AgentKarma Provider + Consumer karma for a Celo wallet |
-| `get_agentkarma_celo_agent` | read | ERC-8004 Celo agent by numeric ID |
-| `check_agentkarma_counterparty` | read | Local trust-policy evaluation against karma snapshot |
+Full schemas and handlers live in [`@andrewkimjoseph/celina-sdk/tools`](../celina-sdk/docs/guides/tool-catalog.md). MCP registers them via `registerSdkTools` — no per-tool files in this repo.
+
+### Core
+
+| Tools | Notes |
+|-------|-------|
+| `get_network_status`, `get_block`, `get_latest_blocks`, `get_transaction` | Chain reads |
+| `check_attribution_tag`, `verify_attribution_tag` | ERC-8021 attribution on txs |
+| `get_wallet_address` | Stdio only — default + dual-wallet addresses |
+| `get_account`, `get_celo_account_registration`, `execute_register_celo_account` | Account balance, nonce, Celo Accounts registration |
+| `resolve_ens` | Celo + Ethereum ENS |
+
+### Tokens and DeFi
+
+| Tools | Notes |
+|-------|-------|
+| `get_celo_balances`, `get_stablecoin_balances`, `get_token_info`, `get_token_balance` | Registry token reads |
+| `get_gas_fee_data`, `estimate_transaction`, `estimate_send`, `send_token` | Sends (stdio writes) |
+| `get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx` | Mento FX |
+| `get_uniswap_quote`, `estimate_uniswap_swap`, `execute_uniswap_swap` | Uniswap v4 |
+| `get_aave_balances`, `supply_aave`, `withdraw_aave` | Aave V3 Celo |
+| `get_gooddollar_*`, `claim_daily_gooddollar_ubi`, `execute_gooddollar_reserve_swap`, `get_gooddollar_face_verification_link`, `execute_connect_gooddollar_identity`, `execute_disconnect_gooddollar_identity` | GoodDollar identity, UBI, reserve — see [GoodDollar](#gooddollar) |
+
+### Governance (humanness-gated writes)
+
+| Reads | Stdio executes |
+|-------|----------------|
+| `get_governance_proposals`, `get_proposal_details`, `get_votable_proposals`, `get_governance_votes`, `get_locked_celo_balance`, `get_pending_withdrawals` | `execute_lock_celo`, `execute_unlock_celo`, `execute_relock_celo`, `execute_withdraw_celo`, `execute_vote`, `execute_upvote`, `execute_revoke_governance_votes`, `execute_revoke_governance_upvote` |
+
+Queue flow: `get_governance_proposals` (Queued) → `execute_upvote`. Referendum flow: `get_votable_proposals` → `execute_vote`. Call `check_humanness` before any execute.
+
+### Staking (humanness-gated writes)
+
+| Reads | Stdio executes |
+|-------|----------------|
+| `get_staking_balances`, `get_activatable_stakes`, `get_validator_groups`, `get_validator_group_details`, `get_total_staking_info`, `get_delegation_info`, `get_stake_eligibility` | `execute_stake`, `execute_activate_stake`, `execute_unstake`, `execute_delegate_power`, `execute_undelegate_power` |
+
+Call `get_stake_eligibility` before `execute_stake` — groups at capacity (e.g. cLabs) will fail.
+
+### Humanness
+
+| Tool | Notes |
+|------|-------|
+| `check_humanness` | Passes if Self Agent ID **or** GoodDollar whitelist succeeds for the address; gates governance/staking executes |
+
+### NFT and contract
+
+| Tools | Notes |
+|-------|-------|
+| `get_nft_info`, `get_nft_balance` | ERC-721 / ERC-1155 |
+| `call_contract_function`, `estimate_contract_gas`, `execute_contract_function` | Caller-supplied ABI |
+
+### Self Agent ID
+
+| Reads | Stdio session / signing |
+|-------|-------------------------|
+| `verify_self_agent`, `lookup_self_agent`, `verify_self_request` | `register_self_agent`, `check_self_registration`, `refresh_self_proof`, `deregister_self_agent`, `get_self_identity`, `sign_self_request`, `authenticated_self_fetch` |
+
+See [Self Agent ID notes](#self-agent-id-notes) below.
+
+### AgentKarma
+
+| Tools | Notes |
+|-------|-------|
+| `get_agentkarma_reputation`, `get_agentkarma_celo_agent`, `check_agentkarma_counterparty` | Read-only external API; hosted requires explicit `address` |
 
 ### Swap routing (Mento FX, GoodDollar reserve, Uniswap v4)
 
@@ -387,12 +397,14 @@ Set `surfaces` on the definition (`"mcp"`, `"browser"`, or both) and use `filter
 
 ### Architecture split
 
-Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) simulates each step with [`simulatePreparedStep`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk/simulation) before signing with `CELO_PRIVATE_KEY`:
+Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) simulates each step with [`simulatePreparedStep`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk/simulation) before signing:
 
 | Layer | Source | Examples |
 |-------|--------|----------|
-| Reads | celina-sdk | balances, blocks, Mento/Uniswap/reserve quotes, GoodDollar whitelist/UBI/reserve, ENS |
-| Writes | SDK `prepare*` + local executor | `send_token`, `execute_mento_fx`, `execute_uniswap_swap`, `execute_gooddollar_reserve_swap`, `supply_aave`, `withdraw_aave`, `claim_daily_gooddollar_ubi`, `execute_contract_function` |
+| Reads | celina-sdk | balances, blocks, quotes, governance/staking reads, GoodDollar, ENS, humanness |
+| DeFi writes | SDK `prepare*` + local executor | `send_token`, Mento/Uniswap/reserve/Aave executes |
+| Governance / staking writes | `governanceWrite`, `stakingWrite` | `execute_lock_celo`, `execute_stake`, … (humanness-gated) |
+| Account / GoodDollar identity | `accountWrite`, `gooddollarIdentityWrite`, `gooddollarFaceVerification` | `execute_register_celo_account`, connect/disconnect, face verification link |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 
 Before each `wallet.sendTransaction`, `executePreparedFlow` calls `simulatePreparedStep` from `@andrewkimjoseph/celina-sdk/simulation`. Reverts are caught **before gas is spent**; a post-mine `receipt.status` check remains as a safety net. No `feeCurrency` — the server wallet pays CELO gas.
@@ -436,13 +448,9 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 - [x] Aave tools (`get_aave_balances`, `supply_aave`, `withdraw_aave`) — USDT, WETH, USDm, USDC, CELO, EURm
 - [x] Self proof verification (`verify_self_agent`, `verify_self_request`, `ai.self.xyz`)
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
-
-## Development
-
-```bash
-npm run dev          # watch TypeScript
-npm run inspect      # MCP Inspector UI (stdio)
-```
+- [x] Governance executes (`execute_lock_celo`, `execute_vote`, `execute_upvote`, …)
+- [x] Staking executes (`execute_stake`, `execute_activate_stake`, delegate/undelegate)
+- [x] Humanness gate (`check_humanness`) and GoodDollar identity connect/disconnect
 
 ## License
 
