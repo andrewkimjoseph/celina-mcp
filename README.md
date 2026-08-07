@@ -445,6 +445,14 @@ Point your MCP client at the built entry for source development:
 
 Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, and RPC overrides.
 
+## Troubleshooting
+
+| Symptom | Likely cause | What to do |
+|---------|--------------|------------|
+| `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level (common with `npx -y` or a home-level `package.json`) | Run `npm i ox` where celina-mcp is installed, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
+| MCP server never connects / Shared MCP process crash on start | Same as above, or stale npx cache | Fully quit and restart your MCP client after fixing deps; for dev, point `args` at your local `build/index.js` |
+| Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...` |
+
 ## Roadmap
 
 - [x] Mento FX routing (`get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx`)
