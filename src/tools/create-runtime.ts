@@ -1,6 +1,6 @@
 import type { ToolRuntime, ToolRuntimeExecutors } from "@andrewkimjoseph/celina-sdk/tools";
 import type { AppContext } from "../context/app-context.js";
-import { resolveWalletAddress } from "./resolve-wallet.js";
+import { resolveWalletAddress, assertSelfAgentKey } from "./resolve-wallet.js";
 
 export function createMcpRuntime(ctx: AppContext): ToolRuntime {
   const executors: ToolRuntimeExecutors = {
@@ -135,25 +135,32 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
           agentDescription: args.agent_description as string | undefined,
         }),
       checkRegistration: (sessionId) => ctx.self.checkRegistration(sessionId),
-      getIdentity: () => ctx.self.getIdentity(),
+      getIdentity: () => {
+        assertSelfAgentKey(ctx);
+        return ctx.self.getIdentity();
+      },
       refreshProof: (args) =>
         ctx.self.refreshProof({
           agentId: args.agent_id as number | undefined,
         }),
       deregisterAgent: () => ctx.self.deregisterAgent(),
-      signRequest: (args) =>
-        ctx.self.signRequest({
+      signRequest: (args) => {
+        assertSelfAgentKey(ctx);
+        return ctx.self.signRequest({
           method: args.method as "GET" | "POST" | "PUT" | "DELETE",
           url: args.url as string,
           body: args.body as string | undefined,
-        }),
-      authenticatedFetch: (args) =>
-        ctx.self.authenticatedFetch({
+        });
+      },
+      authenticatedFetch: (args) => {
+        assertSelfAgentKey(ctx);
+        return ctx.self.authenticatedFetch({
           method: args.method as "GET" | "POST" | "PUT" | "DELETE",
           url: args.url as string,
           body: args.body as string | undefined,
           contentType: args.content_type as string | undefined,
-        }),
+        });
+      },
     },
   };
 
@@ -164,21 +171,23 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
         ctx,
         input?.address ?? input?.wallet_address ?? input?.from,
       ),
-    mcpWallet: ctx.config.walletAddress
-      ? {
-          address: ctx.config.walletAddress,
-          hasWallet: ctx.config.hasWallet,
-          signer: ctx.config.signer,
-          wallets: {
-            celo: ctx.config.celoAddress
-              ? { address: ctx.config.celoAddress }
-              : undefined,
-            self_agent: ctx.config.selfAgentAddress
-              ? { address: ctx.config.selfAgentAddress }
-              : undefined,
-          },
-        }
-      : undefined,
+    mcpWallet:
+      ctx.config.walletAddress || ctx.config.keyErrors
+        ? {
+            address: ctx.config.walletAddress,
+            hasWallet: ctx.config.hasWallet,
+            signer: ctx.config.signer,
+            keyErrors: ctx.config.keyErrors,
+            wallets: {
+              celo: ctx.config.celoAddress
+                ? { address: ctx.config.celoAddress }
+                : undefined,
+              self_agent: ctx.config.selfAgentAddress
+                ? { address: ctx.config.selfAgentAddress }
+                : undefined,
+            },
+          }
+        : undefined,
     executors,
   };
 }

@@ -22,12 +22,14 @@ describe("loadConfig", () => {
     expect(loadConfig().privateKey).toBe(KEY_WITH_PREFIX);
   });
 
-  it("rejects invalid CELO_PRIVATE_KEY at load time", () => {
+  it("stores invalid CELO_PRIVATE_KEY error without throwing", () => {
     process.env = {
       ...env,
       CELO_PRIVATE_KEY: "0x...",
     };
 
-    expect(() => loadConfig()).toThrow(/CELO_PRIVATE_KEY is set but invalid/);
+    const config = loadConfig();
+    expect(config.privateKey).toBeUndefined();
+    expect(config.keyErrors?.celo).toMatch(/CELO_PRIVATE_KEY is set but invalid/);
   });
 });

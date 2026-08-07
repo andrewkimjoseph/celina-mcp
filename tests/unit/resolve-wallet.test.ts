@@ -34,4 +34,19 @@ describe("resolveWalletAddress", () => {
       /Set CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY/,
     );
   });
+
+  it("throws keyErrors message when no wallet and invalid key configured", () => {
+    expect(() =>
+      resolveWalletAddress({
+        config: {
+          hasWallet: false,
+          hasSelfAgentKey: false,
+          hasCeloKey: false,
+          keyErrors: {
+            celo: "CELO_PRIVATE_KEY is set but invalid (expected 64 hex characters, with or without 0x prefix). Remove it or fix it.",
+          },
+        },
+      } as AppContext),
+    ).toThrow(/CELO_PRIVATE_KEY is set but invalid/);
+  });
 });

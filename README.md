@@ -64,7 +64,7 @@ Install the package, then add Celina to your MCP config. Your client spawns `npx
 
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
-Private keys accept **64 hex characters with or without a `0x` prefix** (normalized at startup). Do not leave placeholder values like `0x...` in config — they fail validation and block MCP startup. **Self-only** setups can use **`SELF_AGENT_PRIVATE_KEY` alone** (omit `CELO_PRIVATE_KEY`) for governance/staking when the Self agent passes humanness.
+Private keys accept **64 hex characters with or without a `0x` prefix** (normalized at startup). Invalid or placeholder values like `0x...` are ignored at startup so read-only tools still load; write tools return a clear config error until you fix or remove the key. **Self-only** setups can use **`SELF_AGENT_PRIVATE_KEY` alone** (omit `CELO_PRIVATE_KEY`) for governance/staking when the Self agent passes humanness.
 
 **Read telemetry:** Off-chain tool usage is logged via the bundled Celina SDK. Each MCP install gets a stable `device_id` (`~/.config/celina/install-id`) so stats can distinguish hosts; wallet-scoped reads also set Amplitude `user_id` to the public wallet address (from tool args or the `CELO_PRIVATE_KEY` signer). Opt out or override via `createServer({ analyticsEnabled: false, analyticsDeviceId: "..." })` when embedding the server programmatically.
 
@@ -451,7 +451,7 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 |---------|--------------|------------|
 | `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level (common with `npx -y` or a home-level `package.json`) | Run `npm i ox` where celina-mcp is installed, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
 | MCP server never connects / Shared MCP process crash on start | Same as above, or stale npx cache | Fully quit and restart your MCP client after fixing deps; for dev, point `args` at your local `build/index.js` |
-| Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...` |
+| Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...`. Invalid keys no longer block startup — fix the env value and restart for writes |
 
 ## Roadmap
 

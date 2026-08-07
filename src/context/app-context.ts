@@ -52,10 +52,12 @@ export interface AppContext {
   config: {
     hasWallet: boolean;
     walletAddress?: `0x${string}`;
-    /** Default signer resolved for `walletAddress` (celo when both keys are set). */
+    /** Which configured key resolves to `walletAddress` when no explicit signer is requested. */
     signer?: "celo" | "self_agent";
     hasSelfAgentKey: boolean;
     hasCeloKey: boolean;
+    /** Invalid env key messages when a key is set but malformed. */
+    keyErrors?: import("../config/env.js").KeyConfigErrors;
     /** Main wallet address, when CELO_PRIVATE_KEY is configured. */
     celoAddress?: `0x${string}`;
     /** Self agent wallet address, when SELF_AGENT_PRIVATE_KEY is configured. */
@@ -127,6 +129,7 @@ export function createAppContext(
       signer: defaultSigner,
       hasSelfAgentKey: Boolean(config.selfAgentPrivateKey),
       hasCeloKey: Boolean(config.privateKey),
+      keyErrors: config.keyErrors,
       celoAddress: clientFactory.hasSigner("celo")
         ? clientFactory.getClients("celo").accountAddress
         : undefined,

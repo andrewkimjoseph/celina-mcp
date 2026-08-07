@@ -54,22 +54,44 @@ export class CeloClientFactory {
 
   resolveSigner(signer?: SignerKind): SignerKind {
     if (signer) {
-      if (signer === "celo" && !this.config.privateKey) {
-        throw new Error("CELO_PRIVATE_KEY is not configured.");
+      if (signer === "celo") {
+        if (this.config.keyErrors?.celo) {
+          throw new Error(this.config.keyErrors.celo);
+        }
+        if (!this.config.privateKey) {
+          throw new Error("CELO_PRIVATE_KEY is not configured.");
+        }
       }
-      if (signer === "self_agent" && !this.config.selfAgentPrivateKey) {
-        throw new Error("SELF_AGENT_PRIVATE_KEY is not configured.");
+      if (signer === "self_agent") {
+        if (this.config.keyErrors?.selfAgent) {
+          throw new Error(this.config.keyErrors.selfAgent);
+        }
+        if (!this.config.selfAgentPrivateKey) {
+          throw new Error("SELF_AGENT_PRIVATE_KEY is not configured.");
+        }
       }
       return signer;
     }
 
     const defaultSigner = this.getDefaultSigner();
     if (!defaultSigner) {
+      const keyError = this.formatKeyErrors();
+      if (keyError) {
+        throw new Error(keyError);
+      }
       throw new Error(
         "No signing key configured. Set CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY.",
       );
     }
     return defaultSigner;
+  }
+
+  private formatKeyErrors(): string | undefined {
+    const parts = [
+      this.config.keyErrors?.celo,
+      this.config.keyErrors?.selfAgent,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(" ") : undefined;
   }
 
   getClients(signer?: SignerKind): CeloClients {
