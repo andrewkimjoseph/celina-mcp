@@ -450,6 +450,7 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 | Symptom | Likely cause | What to do |
 |---------|--------------|------------|
 | `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level (common with `npx -y` or a home-level `package.json`) | Run `npm i ox` where celina-mcp is installed, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
+| `ERESOLVE overriding peer dependency` for `permissionless` / `ox` on install | `permissionless@0.2.57` optional peer wants `ox@^0.8.0`; Celina pins `ox@^0.10.0` | Safe to ignore on 0.18.11+; or `npm i -g @andrewkimjoseph/celina-mcp --legacy-peer-deps`; if you have `~/package.json`, add `legacy-peer-deps=true` to `~/.npmrc` |
 | MCP server never connects / Shared MCP process crash on start | Same as above, or stale npx cache | Fully quit and restart your MCP client after fixing deps; for dev, point `args` at your local `build/index.js` |
 | Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...`. Invalid keys no longer block startup — fix the env value and restart for writes |
 
