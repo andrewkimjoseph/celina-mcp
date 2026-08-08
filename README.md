@@ -199,7 +199,7 @@ A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (
 }
 ```
 
-The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
+The hosted service runs on Vercel via [celina-mcp-remote](../celina-mcp-remote/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
 **Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
 
@@ -207,7 +207,7 @@ The hosted service runs on Vercel via [celina-mcp-host](../celina-mcp-host/). Do
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
-See [celina-mcp-host/README.md](../celina-mcp-host/README.md) if you want to deploy your own instance.
+See [celina-mcp-remote/README.md](../celina-mcp-remote/README.md) if you want to deploy your own instance.
 
 ## Write tools
 
