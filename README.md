@@ -19,8 +19,10 @@
 ## Install
 
 ```bash
-npm i @andrewkimjoseph/celina-mcp@latest
+npm i -g @andrewkimjoseph/celina-mcp@latest
 ```
+
+Full setup guide (Windows paths, troubleshooting): **[usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local)**.
 
 ## Migration
 
@@ -28,9 +30,9 @@ If you still use `@andrewkimjoseph/celina`, update your MCP config `args` to `@a
 
 ## Quick start
 
-**Recommended:** install locally and connect over stdio — full tool catalog with execute/write when you set `CELO_PRIVATE_KEY`, no cold starts, and keys stay on your machine.
+**Recommended:** install globally and connect over stdio — full tool catalog with execute/write when you set `CELO_PRIVATE_KEY`, fast startup, and keys stay on your machine.
 
-Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) spawns Celina as a child process via `npx`. Tools register from `@andrewkimjoseph/celina-sdk/tools` via `registerSdkTools`. See [Local stdio (recommended)](#local-stdio-recommended).
+Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) runs the **`celina-mcp`** binary over stdio. Tools register from `@andrewkimjoseph/celina-sdk/tools` via `registerSdkTools`. See [Local stdio (recommended)](#local-stdio-recommended) or the [website install guide](https://www.usecelina.xyz/mcp/local).
 
 For chain reads without a local install, use the hosted Streamable HTTP endpoint at [https://mcp.usecelina.xyz/api/mcp](https://mcp.usecelina.xyz/api/mcp) — see [Hosted (reads + prepare)](#hosted-reads--prepare).
 
@@ -40,19 +42,21 @@ Pick your client, install the package, paste the config, restart. Celina shows u
 
 ### Local stdio (recommended)
 
-Install the package, then add Celina to your MCP config. Your client spawns `npx` and talks to Celina over stdio. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Requires Node.js ≥ 20.
+Install globally, then add Celina to your MCP config. Your client runs **`celina-mcp`** over stdio. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Use **Node.js 20 or 22 LTS** (≥ 20 supported).
 
-1. Run `npm i @andrewkimjoseph/celina-mcp` (optional but recommended — caches the package locally for faster MCP startup)
+> **Why not `npx -y`?** Cold `npx` starts can exceed Claude Desktop's ~60s MCP handshake on some Windows machines. Global install + `celina-mcp` avoids that.
+
+1. Run `npm i -g @andrewkimjoseph/celina-mcp@latest`
 2. Open your MCP config (e.g. `claude_desktop_config.json`, Cursor **Settings → MCP**) and merge the snippet below into `mcpServers`
-3. Restart the client
+3. Fully quit and restart the client
 
 ```json
 {
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@andrewkimjoseph/celina-mcp"],
+      "command": "celina-mcp",
+      "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
         "SELF_AGENT_PRIVATE_KEY": "0x..."
@@ -62,6 +66,8 @@ Install the package, then add Celina to your MCP config. Your client spawns `npx
 }
 ```
 
+If `celina-mcp` is not on PATH, use `"command": "node"` and `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` (run `npm root -g` to find the path).
+
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
 Private keys accept **64 hex characters with or without a `0x` prefix** (normalized at startup). Invalid or placeholder values like `0x...` are ignored at startup so read-only tools still load; write tools return a clear config error until you fix or remove the key. **Self-only** setups can use **`SELF_AGENT_PRIVATE_KEY` alone** (omit `CELO_PRIVATE_KEY`) for governance/staking when the Self agent passes humanness.
@@ -70,15 +76,20 @@ Private keys accept **64 hex characters with or without a `0x` prefix** (normali
 
 ### Claude Desktop
 
-Use the same stdio config in `claude_desktop_config.json` (macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`). Requires Node.js ≥ 20.
+Use the same stdio config in `claude_desktop_config.json`:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+Requires Node.js ≥ 20 (20 or 22 LTS recommended).
 
 ```json
 {
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@andrewkimjoseph/celina-mcp"],
+      "command": "celina-mcp",
+      "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
         "SELF_AGENT_PRIVATE_KEY": "0x..."
@@ -130,8 +141,8 @@ Native MCP hosting via `mcp.json`.
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@andrewkimjoseph/celina-mcp"],
+      "command": "celina-mcp",
+      "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
         "SELF_AGENT_PRIVATE_KEY": "0x..."
@@ -158,10 +169,8 @@ schema: v1
 mcpServers:
   - name: celina-mcp
     type: stdio
-    command: npx
-    args:
-      - "-y"
-      - "@andrewkimjoseph/celina-mcp"
+    command: celina-mcp
+    args: []
 ```
 
 Alternatively, copy the [local stdio JSON](#local-stdio-recommended) into `.continue/mcpServers/mcp.json` — Continue picks up Claude/Cursor-style configs automatically.
@@ -183,7 +192,7 @@ npm run inspect
 
 ## Hosted (reads + prepare)
 
-A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (alias: `/mcp`). Use this when you need chain reads without a local `npx` install.
+A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (alias: `/mcp`). Use this when you need chain reads without a local install.
 
 **Local stdio remains the recommended setup** — it supports write tools with your own keys, Self Agent ID flows, and avoids serverless cold starts.
 
@@ -449,9 +458,12 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 
 | Symptom | Likely cause | What to do |
 |---------|--------------|------------|
-| `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level (common with `npx -y` or a home-level `package.json`) | Run `npm i ox` where celina-mcp is installed, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
+| MCP disconnects after ~60s; logs show `notifications/cancelled` | Cold `npx -y` or slow first import exceeds Claude Desktop handshake timeout | `npm i -g @andrewkimjoseph/celina-mcp@latest`; use `"command": "celina-mcp"`; Node 20/22 LTS — see [usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local) |
+| `celina-mcp` not found | Global npm bin not on PATH | `"command": "node"`, `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` |
+| `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level | Run `npm i -g ox`, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
 | `ERESOLVE overriding peer dependency` for `permissionless` / `ox` on install | `permissionless@0.2.57` optional peer wants `ox@^0.8.0`; Celina pins `ox@^0.10.0` | Safe to ignore on 0.18.11+; or `npm i -g @andrewkimjoseph/celina-mcp --legacy-peer-deps`; if you have `~/package.json`, add `legacy-peer-deps=true` to `~/.npmrc` |
-| MCP server never connects / Shared MCP process crash on start | Same as above, or stale npx cache | Fully quit and restart your MCP client after fixing deps; for dev, point `args` at your local `build/index.js` |
+| MCP server never connects / Shared MCP process crash on start | Stale npx cache or wrong command | Use global `celina-mcp` command; fully quit and restart your MCP client; for dev, point `args` at your local `build/index.js` |
+| `EPIPE: broken pipe` in logs | Client closed stdio before late `initialize` response | Fix slow startup (global install + `celina-mcp` command) |
 | Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...`. Invalid keys no longer block startup — fix the env value and restart for writes |
 
 ## Roadmap
