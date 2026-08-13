@@ -210,9 +210,9 @@ A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (
 
 The hosted service runs on Vercel via [celina-mcp-remote](../celina-mcp-remote/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
+**Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`, `get_governance_delegate_details`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
 
-**Hosted MCP:** **45 tools** — reads, oracle/AMM quotes, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
+**Hosted MCP:** **46 tools** — reads, oracle/AMM quotes, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -305,13 +305,13 @@ Queue flow: `get_governance_proposals` (Queued) → `execute_upvote`. Referendum
 
 | Reads | Stdio executes |
 |-------|----------------|
-| `get_staking_balances`, `get_activatable_stakes`, `get_validator_groups`, `get_validator_group_details`, `get_total_staking_info`, `get_delegation_info`, `get_governance_delegates`, `get_stake_eligibility` | `execute_stake`, `execute_activate_stake`, `execute_unstake`, `execute_delegate_power`, `execute_undelegate_power` |
+| `get_staking_balances`, `get_activatable_stakes`, `get_validator_groups`, `get_validator_group_details`, `get_total_staking_info`, `get_delegation_info`, `get_governance_delegates`, `get_governance_delegate_details`, `get_stake_eligibility` | `execute_stake`, `execute_activate_stake`, `execute_unstake`, `execute_delegate_power`, `execute_undelegate_power` |
 
 Call `get_stake_eligibility` before `execute_stake` — groups at capacity (e.g. cLabs) will fail.
 
 ### Governance delegation discovery
 
-When the user asks who to delegate to: `get_governance_delegates` → pick a delegatee `address` → `get_delegation_info` + `get_locked_celo_balance` → `execute_delegate_power`. The Celo Mondo directory is curated off-chain (not an on-chain registry); any address can receive delegation.
+When the user asks who to delegate to: `get_governance_delegates` → pick a delegatee `address` → `get_governance_delegate_details` (optional profile lookup) → `get_delegation_info` + `get_locked_celo_balance` → `execute_delegate_power`. When they already have an address: start with `get_governance_delegate_details`. The Celo Mondo directory is curated off-chain (not an on-chain registry); any address can receive delegation.
 
 ### Humanness
 
@@ -475,7 +475,7 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
 - [x] Governance executes (`execute_lock_celo`, `execute_vote`, `execute_upvote`, …)
 - [x] Staking executes (`execute_stake`, `execute_activate_stake`, delegate/undelegate)
-- [x] Governance delegate discovery (`get_governance_delegates` — Celo Mondo directory)
+- [x] Governance delegate discovery (`get_governance_delegates`, `get_governance_delegate_details` — Celo Mondo directory)
 - [x] Humanness gate (`check_humanness`) and GoodDollar identity connect/disconnect
 
 ## License
