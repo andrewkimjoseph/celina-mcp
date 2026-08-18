@@ -238,9 +238,9 @@ A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (
 
 The hosted service runs on Vercel via [celina-mcp-remote](../celina-mcp-remote/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
-**Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`, `get_governance_delegate_details`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
+**Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_queued_proposals`, `get_actionable_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`, `get_governance_delegate_details`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
 
-**Hosted MCP:** **46 tools** — reads, oracle/AMM quotes, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
+**Hosted MCP:** **48 tools** — reads, oracle/AMM quotes, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -325,9 +325,9 @@ Full schemas and handlers live in [`@andrewkimjoseph/celina-sdk/tools`](../celin
 
 | Reads | Stdio executes |
 |-------|----------------|
-| `get_governance_proposals`, `get_proposal_details`, `get_votable_proposals`, `get_governance_votes`, `get_locked_celo_balance`, `get_pending_withdrawals` | `execute_lock_celo`, `execute_unlock_celo`, `execute_relock_celo`, `execute_withdraw_celo`, `execute_vote`, `execute_upvote`, `execute_revoke_governance_votes`, `execute_revoke_governance_upvote` |
+| `get_governance_proposals`, `get_proposal_details`, `get_queued_proposals`, `get_actionable_governance_proposals`, `get_votable_proposals`, `get_governance_votes`, `get_locked_celo_balance`, `get_pending_withdrawals` | `execute_lock_celo`, `execute_unlock_celo`, `execute_relock_celo`, `execute_withdraw_celo`, `execute_vote`, `execute_upvote`, `execute_revoke_governance_votes`, `execute_revoke_governance_upvote` |
 
-Queue flow: `get_governance_proposals` (Queued) → `execute_upvote`. Referendum flow: `get_votable_proposals` → `execute_vote`. Call `check_humanness` before any execute.
+Discover: `get_queued_proposals` (Queue), `get_votable_proposals` (Referendum), or `get_actionable_governance_proposals` (both). Optional: `get_proposal_details(proposal_id)` for CGP title and markdown before acting. Queue flow: `get_queued_proposals` → `execute_upvote`. Referendum flow: `get_votable_proposals` → `execute_vote`. Call `check_humanness` before any execute.
 
 ### Staking (humanness-gated writes)
 
