@@ -42,20 +42,28 @@ Pick your client, install the package, paste the config, restart. Celina shows u
 
 ### Local stdio (recommended)
 
-Install globally, then add Celina to your MCP config. Your client runs **`celina-mcp`** over stdio. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Use **Node.js 20 or 22 LTS** (≥ 20 supported).
+Install globally, then add Celina to your MCP config. Your client runs the **`celina-mcp`** binary over stdio. Works in any stdio client (Cursor, Claude Desktop, LM Studio, Continue, MCP Inspector). Use **Node.js 20 or 22 LTS** (≥ 20 supported).
 
-> **Why not `npx -y`?** Cold `npx` starts can exceed Claude Desktop's ~60s MCP handshake on some Windows machines. Global install + `celina-mcp` avoids that.
+> **Why not `npx -y`?** Cold `npx` starts can exceed Claude Desktop's ~60s MCP handshake on some Windows machines. Global install + an absolute `celina-mcp` path avoids that.
+
+GUI clients (Cursor, Claude Desktop) often spawn MCP servers with a minimal PATH that does not include nvm, fnm, Homebrew, or npm’s global bin. Bare `"command": "celina-mcp"` then fails with `spawn celina-mcp ENOENT` and the client reconnects in a loop. Paste the absolute path from the commands below into `"command"` before you first connect.
 
 1. Run `npm i -g @andrewkimjoseph/celina-mcp@latest`
-2. Open your MCP config (e.g. `claude_desktop_config.json`, Cursor **Settings → MCP**) and merge the snippet below into `mcpServers`
-3. Fully quit and restart the client
+2. **Find the binary path** (copy the output into `"command"` in step 3):
+   - **macOS / Linux:** `which celina-mcp`
+   - **Windows (cmd):** `where celina-mcp`
+   - **Windows (PowerShell):** `(Get-Command celina-mcp).Source`
+3. Open your MCP config (e.g. `claude_desktop_config.json`, Cursor **Settings → MCP**) and merge a snippet below into `mcpServers`
+4. Fully quit and restart the client
+
+**macOS / Linux example:**
 
 ```json
 {
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "celina-mcp",
+      "command": "/Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp",
       "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
@@ -66,7 +74,25 @@ Install globally, then add Celina to your MCP config. Your client runs **`celina
 }
 ```
 
-If `celina-mcp` is not on PATH, use `"command": "node"` and `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` (run `npm root -g` to find the path).
+**Windows example** (use the `.cmd` shim path from `where` / `Get-Command`; escape backslashes in JSON):
+
+```json
+{
+  "mcpServers": {
+    "celina-mcp": {
+      "type": "stdio",
+      "command": "C:\\Users\\YourName\\AppData\\Roaming\\npm\\celina-mcp.cmd",
+      "args": [],
+      "env": {
+        "CELO_PRIVATE_KEY": "0x...",
+        "SELF_AGENT_PRIVATE_KEY": "0x..."
+      }
+    }
+  }
+}
+```
+
+Replace `"command"` with your `which` / `where` / `Get-Command` output. `"command": "celina-mcp"` only works if the GUI app inherits npm’s global bin — often false on macOS and Windows. If path lookup is empty, install globally first, or as a last resort use `"command": "node"` and `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` (run `npm root -g` to find the path; use Windows path separators in the arg on Windows).
 
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
@@ -88,7 +114,7 @@ Requires Node.js ≥ 20 (20 or 22 LTS recommended).
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "celina-mcp",
+      "command": "/Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp",
       "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
@@ -99,7 +125,7 @@ Requires Node.js ≥ 20 (20 or 22 LTS recommended).
 }
 ```
 
-Fully quit and relaunch Claude Desktop after editing the config (closing the window is not enough).
+Replace `"command"` with your `which` / `where` / `Get-Command` output. Fully quit and relaunch Claude Desktop after editing the config (closing the window is not enough).
 
 ### Local stdio (from source)
 
@@ -141,7 +167,7 @@ Native MCP hosting via `mcp.json`.
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "celina-mcp",
+      "command": "/Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp",
       "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
@@ -152,7 +178,7 @@ Native MCP hosting via `mcp.json`.
 }
 ```
 
-Omit `CELO_PRIVATE_KEY` for read-only.
+Replace `"command"` with your `which` / `where` / `Get-Command` output. Omit `CELO_PRIVATE_KEY` for read-only.
 
 ### Continue · VS Code
 
@@ -169,9 +195,11 @@ schema: v1
 mcpServers:
   - name: celina-mcp
     type: stdio
-    command: celina-mcp
+    command: /Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp
     args: []
 ```
+
+Replace `command` with your `which` / `where` / `Get-Command` output.
 
 Alternatively, copy the [local stdio JSON](#local-stdio-recommended) into `.continue/mcpServers/mcp.json` — Continue picks up Claude/Cursor-style configs automatically.
 
@@ -458,11 +486,11 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 
 | Symptom | Likely cause | What to do |
 |---------|--------------|------------|
-| MCP disconnects after ~60s; logs show `notifications/cancelled` | Cold `npx -y` or slow first import exceeds Claude Desktop handshake timeout | `npm i -g @andrewkimjoseph/celina-mcp@latest`; use `"command": "celina-mcp"`; Node 20/22 LTS — see [usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local) |
-| `celina-mcp` not found | Global npm bin not on PATH | `"command": "node"`, `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` |
+| MCP disconnects after ~60s; logs show `notifications/cancelled` | Cold `npx -y` or slow first import exceeds Claude Desktop handshake timeout | `npm i -g @andrewkimjoseph/celina-mcp@latest`; set `"command"` to absolute path from `which` / `where` / `Get-Command`; Node 20/22 LTS — see [usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local) |
+| Cursor reconnect loop; logs show `spawn celina-mcp ENOENT` | GUI PATH missing npm’s global bin (nvm/fnm/Homebrew on macOS; npm global prefix on Windows), or binary not installed | Run `which` / `where` / `Get-Command` (see [Local stdio](#local-stdio-recommended)) and paste that absolute path into `"command"`. If lookup is empty, install globally first, or as a last resort use `"command": "node"` and `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` |
 | `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level | Run `npm i -g ox`, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
 | `ERESOLVE overriding peer dependency` for `permissionless` / `ox` on install | `permissionless@0.2.57` optional peer wants `ox@^0.8.0`; Celina pins `ox@^0.10.0` | Safe to ignore on 0.18.11+; or `npm i -g @andrewkimjoseph/celina-mcp --legacy-peer-deps`; if you have `~/package.json`, add `legacy-peer-deps=true` to `~/.npmrc` |
-| MCP server never connects / Shared MCP process crash on start | Stale npx cache or wrong command | Use global `celina-mcp` command; fully quit and restart your MCP client; for dev, point `args` at your local `build/index.js` |
+| MCP server never connects / Shared MCP process crash on start | Stale npx cache, wrong command, or GUI PATH miss | Set `"command"` to absolute path from `which` / `where` / `Get-Command`; fully quit and restart your MCP client; for dev, point `args` at your local `build/index.js` |
 | `EPIPE: broken pipe` in logs | Client closed stdio before late `initialize` response | Fix slow startup (global install + `celina-mcp` command) |
 | Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...`. Invalid keys no longer block startup — fix the env value and restart for writes |
 
