@@ -63,7 +63,7 @@ GUI clients (Cursor, Claude Desktop) often spawn MCP servers with a minimal PATH
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "/Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp",
+      "command": "/path/to/celina-mcp",
       "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
@@ -114,7 +114,7 @@ Requires Node.js ≥ 20 (20 or 22 LTS recommended).
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "/Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp",
+      "command": "/path/to/celina-mcp",
       "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
@@ -167,7 +167,7 @@ Native MCP hosting via `mcp.json`.
   "mcpServers": {
     "celina-mcp": {
       "type": "stdio",
-      "command": "/Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp",
+      "command": "/path/to/celina-mcp",
       "args": [],
       "env": {
         "CELO_PRIVATE_KEY": "0x...",
@@ -195,7 +195,7 @@ schema: v1
 mcpServers:
   - name: celina-mcp
     type: stdio
-    command: /Users/andi/.nvm/versions/node/v24.15.0/bin/celina-mcp
+    command: /path/to/celina-mcp
     args: []
 ```
 
