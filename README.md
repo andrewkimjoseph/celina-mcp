@@ -325,9 +325,9 @@ Full schemas and handlers live in [`@andrewkimjoseph/celina-sdk/tools`](../celin
 
 | Reads | Stdio executes |
 |-------|----------------|
-| `get_governance_proposals`, `get_proposal_details`, `get_queued_proposals`, `get_actionable_governance_proposals`, `get_votable_proposals`, `get_governance_votes`, `get_locked_celo_balance`, `get_pending_withdrawals` | `execute_lock_celo`, `execute_unlock_celo`, `execute_relock_celo`, `execute_withdraw_celo`, `execute_vote`, `execute_upvote`, `execute_revoke_governance_votes`, `execute_revoke_governance_upvote` |
+| `get_governance_proposals`, `get_proposal_details`, `get_queued_proposals`, `get_actionable_governance_proposals`, `get_votable_proposals`, `get_governance_votes`, `get_locked_celo_balance`, `get_pending_withdrawals` | `execute_lock_celo`, `execute_unlock_celo`, `execute_relock_celo`, `execute_withdraw_celo`, `execute_vote`, `execute_upvote`, `execute_dequeue_proposals_if_ready`, `execute_revoke_governance_votes`, `execute_revoke_governance_upvote` |
 
-Discover: `get_queued_proposals` (Queue), `get_votable_proposals` (Referendum), or `get_actionable_governance_proposals` (both). Optional: `get_proposal_details(proposal_id)` for CGP title and markdown before acting. Queue flow: `get_queued_proposals` → `execute_upvote`. Referendum flow: `get_votable_proposals` → `execute_vote`. Call `check_humanness` before any execute.
+Discover: `get_queued_proposals` (Queue), `get_votable_proposals` (Referendum), or `get_actionable_governance_proposals` (both). Optional: `get_proposal_details(proposal_id)` for CGP title and markdown before acting. When `dequeueReady`, call `execute_dequeue_proposals_if_ready` before upvoting proposals with `upvoteable=false`. Queue flow: `get_queued_proposals` → `execute_upvote` (or dequeue first if overdue). Referendum flow: `get_votable_proposals` → `execute_vote`. Call `check_humanness` before humanness-gated executes (dequeue is not humanness-gated).
 
 ### Staking (humanness-gated writes)
 

@@ -73,6 +73,22 @@ export class GovernanceWriteService {
     );
   }
 
+  async dequeueProposalsIfReady(signer?: SignerKind) {
+    const clients = this.clientFactory.getClients(signer);
+    const from = clients.accountAddress;
+    if (!from) {
+      throw new Error("No wallet address available for signing.");
+    }
+
+    const prepared = await this.sdk.governance.prepareDequeueProposalsIfReady(from);
+    const result = await executePreparedFlow(this.clientFactory, prepared.steps, signer);
+
+    return {
+      from,
+      ...result,
+    };
+  }
+
   revokeGovernanceVotes(signer?: SignerKind) {
     return this.executeHumannessGated(signer, (from) =>
       this.sdk.governance.prepareRevokeGovernanceVotes(from),

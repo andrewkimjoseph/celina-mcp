@@ -85,6 +85,8 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
       vote: (proposalId, vote, signer) =>
         ctx.governanceWrite.vote(proposalId, vote, signer),
       upvote: (proposalId, signer) => ctx.governanceWrite.upvote(proposalId, signer),
+      dequeueProposalsIfReady: (signer) =>
+        ctx.governanceWrite.dequeueProposalsIfReady(signer),
       revokeGovernanceVotes: (signer) =>
         ctx.governanceWrite.revokeGovernanceVotes(signer),
       revokeGovernanceUpvote: (proposalId, signer) =>
