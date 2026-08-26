@@ -5,7 +5,7 @@
 <h1 align="center">Celina — Celo MCP Server</h1>
 
 <p align="center">
-  <strong>Celina</strong> is an open-source <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server for <strong>Celo mainnet</strong>. It registers the shared <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk"><code>@andrewkimjoseph/celina-sdk/tools</code></a> catalog — the same Zod schemas and handlers that power browser wallet apps — so MCP and agent hosts stay in sync without duplicate tool definitions.
+  <strong>Celina</strong> is a third-party, open-source stack that gives an LLM read, prepare, and execute access to Celo mainnet through an SDK, an MCP server, and a REST API. This package is the <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server — it registers the shared <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk"><code>@andrewkimjoseph/celina-sdk/tools</code></a> catalog — the same Zod schemas and handlers that power browser wallet apps — so MCP and agent hosts stay in sync with the SDK and REST API.
 </p>
 
 <p align="center">
