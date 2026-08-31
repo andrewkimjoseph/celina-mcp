@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/celina-banner.png" alt="Celina — Give your LLM a wallet on Celo">
+  <img src="https://raw.githubusercontent.com/andrewkimjoseph/celina-mcp/main/assets/celina-banner.svg" alt="Celina — Give your LLM a wallet on Celo">
 </p>
 
 <h1 align="center">Celina — Celo MCP Server</h1>
