@@ -14,6 +14,8 @@
   <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp">npm</a>
   ·
   <a href="https://mcp.usecelina.xyz/api/mcp">Hosted (reads + prepare)</a>
+  ·
+  <a href="https://docs.celo.org/build-on-celo/build-with-ai/mcp/celina">Celo docs</a>
 </p>
 
 ## Install
