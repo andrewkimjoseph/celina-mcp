@@ -13,7 +13,7 @@
   ·
   <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp">npm</a>
   ·
-  <a href="https://mcp.usecelina.xyz/api/mcp">Hosted (reads + prepare)</a>
+  <a href="https://mcp.usecelina.xyz/mcp">Hosted (reads + prepare)</a>
   ·
   <a href="https://docs.celo.org/build-on-celo/build-with-ai/mcp/celina">Celo docs</a>
 </p>
@@ -36,7 +36,7 @@ If you still use `@andrewkimjoseph/celina`, update your MCP config `args` to `@a
 
 Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) runs the **`celina-mcp`** binary over stdio. Tools register from `@andrewkimjoseph/celina-sdk/tools` via `registerSdkTools`. See [Local stdio (recommended)](#local-stdio-recommended) or the [website install guide](https://www.usecelina.xyz/mcp/local).
 
-For chain reads without a local install, use the hosted Streamable HTTP endpoint at [https://mcp.usecelina.xyz/api/mcp](https://mcp.usecelina.xyz/api/mcp) — see [Hosted (reads + prepare)](#hosted-reads--prepare).
+For chain reads without a local install, use the hosted Streamable HTTP endpoint at [https://mcp.usecelina.xyz/mcp](https://mcp.usecelina.xyz/mcp) — see [Hosted (reads + prepare)](#hosted-reads--prepare).
 
 ## MCP setup
 
@@ -222,7 +222,7 @@ npm run inspect
 
 ## Hosted (reads + prepare)
 
-A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (alias: `/mcp`). Use this when you need chain reads without a local install.
+A public hosted endpoint is available at **https://mcp.usecelina.xyz/mcp**. Use this when you need chain reads without a local install.
 
 **Local stdio remains the recommended setup** — it supports write tools with your own keys, Self Agent ID flows, and avoids serverless cold starts.
 
@@ -232,13 +232,13 @@ A public hosted endpoint is available at **https://mcp.usecelina.xyz/api/mcp** (
 {
   "mcpServers": {
     "celina-mcp": {
-      "url": "https://mcp.usecelina.xyz/api/mcp"
+      "url": "https://mcp.usecelina.xyz/mcp"
     }
   }
 }
 ```
 
-The hosted service runs on Vercel via [celina-mcp-remote](../celina-mcp-remote/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
+The hosted service runs on Cloudflare Workers via [celina-mcp-remote](../celina-mcp-remote/). Do **not** send private keys to the hosted endpoint — writes are disabled server-side.
 
 **Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_queued_proposals`, `get_actionable_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`, `get_governance_delegate_details`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
 
