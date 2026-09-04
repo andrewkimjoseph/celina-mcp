@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import type { AgentCard } from "@a2a-js/sdk";
 import {
   DefaultRequestHandler,
@@ -10,12 +9,8 @@ import { CeloClientFactory } from "../clients/celo-client.js";
 import { loadConfig } from "../config/env.js";
 import { createAppContext } from "../context/app-context.js";
 import { createMcpRuntime } from "../tools/create-runtime.js";
+import { CELINA_MCP_VERSION as mcpVersion } from "../server/version.js";
 import { CelinaA2AExecutor } from "./executor.js";
-
-const require = createRequire(import.meta.url);
-const { version: mcpVersion } = require("../../package.json") as {
-  version: string;
-};
 
 export interface CreateA2ARequestHandlerOptions {
   /** Public MCP host base URL, e.g. https://mcp.usecelina.xyz */
