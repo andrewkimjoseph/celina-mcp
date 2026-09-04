@@ -1,6 +1,6 @@
 {
   "name": "@andrewkimjoseph/celina-mcp",
-  "version": "0.18.31",
+  "version": "0.18.32",
   "description": "Celina — MCP server for Celo mainnet. Balances, transfers, DeFi, Self Agent ID, and chain reads for LLM agents.",
   "type": "module",
   "main": "build/index.js",
@@ -34,9 +34,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf build && tsc -p tsconfig.build.json",
+    "generate-version": "node scripts/generate-version.mjs",
+    "build": "npm run generate-version && rm -rf build && tsc -p tsconfig.build.json",
     "start": "node build/index.js",
-    "dev": "tsc --watch",
+    "dev": "npm run generate-version && tsc --watch",
     "pretest": "npm run build",
     "test": "vitest run",
     "test:unit": "vitest run --config vitest.unit.config.ts",

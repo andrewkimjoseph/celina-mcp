@@ -9,4 +9,4 @@ export {
   parseCelinaToolInvocation,
   type CelinaToolInvocation,
 } from "./executor.js";
-export { handleA2ARequest } from "./vercel.js";
+export { handleA2ARequest } from "./handler.js";

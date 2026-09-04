@@ -1,5 +1,4 @@
 /** MCP server factory: load config → create clients → register all tool modules. */
-import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { drainCelinaAnalytics } from "@andrewkimjoseph/celina-sdk";
 import { loadConfig } from "../config/env.js";
@@ -7,9 +6,7 @@ import { CeloClientFactory } from "../clients/celo-client.js";
 import { createAppContext } from "../context/app-context.js";
 import { registerAllTools } from "../tools/index.js";
 import { SERVER_INSTRUCTIONS } from "./instructions.js";
-
-const require = createRequire(import.meta.url);
-const { version } = require("../../package.json") as { version: string };
+import { CELINA_MCP_VERSION } from "./version.js";
 
 export type CreateServerOptions = {
   /** Omit tools requiring CELO_PRIVATE_KEY or SELF_AGENT_PRIVATE_KEY. Default true. */
@@ -33,7 +30,7 @@ export function createServer(options: CreateServerOptions = {}): McpServer {
     : { public: clientFactory.getPublicClient() };
 
   const server = new McpServer(
-    { name: "celina-mcp", version },
+    { name: "celina-mcp", version: CELINA_MCP_VERSION },
     {
       instructions: SERVER_INSTRUCTIONS,
       capabilities: {
