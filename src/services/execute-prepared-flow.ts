@@ -1,3 +1,4 @@
+import { reportCelinaOnchainTxn } from "@andrewkimjoseph/celina-sdk";
 import { simulatePreparedStep, type PreparedTx } from "@andrewkimjoseph/celina-sdk/simulation";
 import { type Hex } from "viem";
 import type { CeloClients, SignerKind } from "../clients/celo-client.js";
@@ -71,6 +72,7 @@ export async function executePreparedFlow(
     if (receipt.status === "reverted") {
       throw new Error(`Transaction reverted: ${hash} (${step.description})`);
     }
+    reportCelinaOnchainTxn(hash);
   }
 
   const hash = stepHashes[stepHashes.length - 1]!;
