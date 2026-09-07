@@ -1,5 +1,9 @@
 import { reportCelinaOnchainTxn } from "@andrewkimjoseph/celina-sdk";
-import { simulatePreparedStep, type PreparedTx } from "@andrewkimjoseph/celina-sdk/simulation";
+import {
+  PreparedFlowExecutionError,
+  simulatePreparedStepWithRetry,
+  type PreparedTx,
+} from "@andrewkimjoseph/celina-sdk/simulation";
 import { type Hex } from "viem";
 import type { CeloClients, SignerKind } from "../clients/celo-client.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
@@ -52,27 +56,38 @@ export async function executePreparedFlow(
 
   const stepHashes: `0x${string}`[] = [];
 
-  for (const step of steps) {
-    await simulatePreparedStep(publicClient as never, {
-      account: account.address,
-      step,
-    });
+  try {
+    for (const step of steps) {
+      await simulatePreparedStepWithRetry(publicClient as never, {
+        account: account.address,
+        step,
+      });
 
-    const hash = await wallet.sendTransaction({
-      chain,
-      account,
-      to: step.to,
-      data: step.data as Hex | undefined,
-      value: step.value ? BigInt(step.value) : undefined,
-    });
+      const hash = await wallet.sendTransaction({
+        chain,
+        account,
+        to: step.to,
+        data: step.data as Hex | undefined,
+        value: step.value ? BigInt(step.value) : undefined,
+      });
 
-    stepHashes.push(hash);
+      stepHashes.push(hash);
 
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    if (receipt.status === "reverted") {
-      throw new Error(`Transaction reverted: ${hash} (${step.description})`);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      if (receipt.status === "reverted") {
+        throw new Error(`Transaction reverted: ${hash} (${step.description})`);
+      }
+      reportCelinaOnchainTxn(hash);
     }
-    reportCelinaOnchainTxn(hash);
+  } catch (error) {
+    if (error instanceof PreparedFlowExecutionError) {
+      throw error;
+    }
+    throw new PreparedFlowExecutionError(
+      error instanceof Error ? error.message : String(error),
+      stepHashes,
+      steps.length,
+    );
   }
 
   const hash = stepHashes[stepHashes.length - 1]!;

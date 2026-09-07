@@ -4,6 +4,7 @@ import {
   resolveSelfSessionLinks,
   type SelfSessionLinks,
 } from "@andrewkimjoseph/celina-sdk";
+import { isPreparedFlowExecutionError } from "@andrewkimjoseph/celina-sdk/simulation";
 
 export function ok(data: unknown): CallToolResult {
   const text = JSON.stringify(data, null, 2);
@@ -23,6 +24,21 @@ export function err(message: string): CallToolResult {
     content: [{ type: "text", text: message }],
     isError: true,
   };
+}
+
+/** Format a thrown tool error, including confirmed hashes from a partial flow. */
+export function formatToolError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!isPreparedFlowExecutionError(error) || error.stepHashes.length === 0) {
+    return message;
+  }
+
+  const hashes = error.stepHashes.join(", ");
+  const ofTotal =
+    error.stepCount != null
+      ? `${error.stepHashes.length} of ${error.stepCount}`
+      : String(error.stepHashes.length);
+  return `${message} (${ofTotal} steps already completed on-chain: ${hashes})`;
 }
 
 function selfSessionLinksFromPayload(

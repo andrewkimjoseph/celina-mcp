@@ -6,7 +6,7 @@ import {
   type ToolRuntime,
 } from "@andrewkimjoseph/celina-sdk/tools";
 import type { AppContext } from "../context/app-context.js";
-import { err, ok, okSelfSession } from "./helpers.js";
+import { err, formatToolError, ok, okSelfSession } from "./helpers.js";
 import { createMcpRuntime } from "./create-runtime.js";
 
 export type RegisterToolsOptions = {
@@ -37,7 +37,7 @@ function registerDefinition(
         }
         return ok(result);
       } catch (error) {
-        return err(error instanceof Error ? error.message : String(error));
+        return err(formatToolError(error));
       }
     },
   );
