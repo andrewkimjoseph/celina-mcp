@@ -1,6 +1,6 @@
 {
   "name": "@andrewkimjoseph/celina",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "Deprecated — use @andrewkimjoseph/celina-mcp",
   "type": "module",
   "bin": {
@@ -20,6 +20,6 @@
     "url": "https://github.com/andrewkimjoseph/celina-mcp/issues"
   },
   "dependencies": {
-    "@andrewkimjoseph/celina-mcp": "0.19.1"
+    "@andrewkimjoseph/celina-mcp": "0.19.2"
   }
 }
