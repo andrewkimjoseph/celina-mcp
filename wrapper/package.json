@@ -20,6 +20,6 @@
     "url": "https://github.com/andrewkimjoseph/celina-mcp/issues"
   },
   "dependencies": {
-    "@andrewkimjoseph/celina-mcp": "0.18.23"
+    "@andrewkimjoseph/celina-mcp": "0.19.0"
   }
 }
