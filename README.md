@@ -242,7 +242,7 @@ The hosted service runs on Cloudflare Workers via [celina-mcp-remote](../celina-
 
 **Works without keys:** all hosted `get_*` reads — including `check_humanness`, governance reads (`get_governance_proposals`, `get_queued_proposals`, `get_actionable_governance_proposals`, `get_locked_celo_balance`, `get_pending_withdrawals`, `get_votable_proposals`, `get_governance_votes`), staking reads (`get_stake_eligibility`, `get_delegation_info`, `get_governance_delegates`, `get_governance_delegate_details`), `get_celo_account_registration`, `get_gooddollar_identity_link`, Aave/GoodDollar quotes, Self verify/lookup, AgentKarma, NFT/contract reads, etc.
 
-**Hosted MCP:** **48 tools** — reads, oracle/AMM quotes, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
+**Hosted MCP:** **50 tools** — reads, oracle/AMM quotes, swap pair lists, attribution check/verify, humanness check, governance/staking reads, and AgentKarma reputation (read-only external API; explicit `address` required — no signer fallback). **`estimate_*`**, server-key writes (`send_token`, `execute_lock_celo`, `execute_stake`, `execute_gooddollar_reserve_swap`, etc.), `get_wallet_address`, GoodDollar connect/disconnect/claim writes, and Self lifecycle/registration tools require **local stdio** with `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY`.
 
 **Unreliable on serverless:** `register_self_agent` / `check_self_registration` — Self sessions are in-memory and do not persist across stateless function invocations.
 
@@ -318,8 +318,8 @@ Full schemas and handlers live in [`@andrewkimjoseph/celina-sdk/tools`](../celin
 |-------|-------|
 | `get_celo_balances`, `get_stablecoin_balances`, `get_token_info`, `get_token_balance` | Registry token reads |
 | `get_gas_fee_data`, `estimate_transaction`, `estimate_send`, `send_token` | Sends (stdio writes) |
-| `get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx` | Mento FX |
-| `get_uniswap_quote`, `estimate_uniswap_swap`, `execute_uniswap_swap` | Uniswap v4 |
+| `get_mento_swap_pairs`, `get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx` | Mento FX |
+| `get_uniswap_swap_pairs`, `get_uniswap_quote`, `estimate_uniswap_swap`, `execute_uniswap_swap` | Uniswap v4 |
 | `get_aave_balances`, `supply_aave`, `withdraw_aave` | Aave V3 Celo |
 | `get_gooddollar_*`, `claim_daily_gooddollar_ubi`, `execute_gooddollar_reserve_swap`, `get_gooddollar_face_verification_link`, `execute_connect_gooddollar_identity`, `execute_disconnect_gooddollar_identity` | GoodDollar identity, UBI, reserve — see [GoodDollar](#gooddollar) |
 
@@ -372,13 +372,13 @@ See [Self Agent ID notes](#self-agent-id-notes) below.
 
 ### Swap routing (Mento FX, GoodDollar reserve, Uniswap v4)
 
-Three swap routes are available. Pick based on the token pair:
+Three swap routes are available. Pick based on the token pair. Call `get_mento_swap_pairs` / `get_uniswap_swap_pairs` when the pair is unknown — do not invent pairs.
 
 | Route | Best for | Quote tool | Execute (MCP) |
 |-------|----------|------------|---------------|
-| **Mento FX** | Mento oracle stables (USDm, EURm, CELO, …) | `get_mento_fx_quote` | `estimate_mento_fx` → `execute_mento_fx` |
+| **Mento FX** | Mento oracle stables (USDm, EURm, CELO, …) | `get_mento_swap_pairs` then `get_mento_fx_quote` | `estimate_mento_fx` → `execute_mento_fx` |
 | **GoodDollar reserve** | **G$ ↔ USDm** (bonding curve) | `get_gooddollar_reserve_quote` | `estimate_gooddollar_reserve_swap` → `execute_gooddollar_reserve_swap` |
-| **Uniswap v4** | AMM pairs (e.g. G$ → USDT, USDC → USDT) | `get_uniswap_quote` | `estimate_uniswap_swap` → `execute_uniswap_swap` |
+| **Uniswap v4** | AMM pairs (e.g. G$ → USDT, USDC → USDT) | `get_uniswap_swap_pairs` then `get_uniswap_quote` | `estimate_uniswap_swap` → `execute_uniswap_swap` |
 
 **G$ ↔ USDm** uses the GoodDollar reserve — not Uniswap (pools are typically illiquid). **G$ → USDT** and similar AMM pairs use Uniswap when Mento FX has no route. CELO swaps on Uniswap route through WCELO pools — the signer needs WCELO (wrapped CELO) balance, not native CELO. All on-chain steps include Celina ERC-8021 Schema 0 attribution (`celina` + optional app codes). Prefer `check_attribution_tag` to confirm tx tags on a tx hash. Sponsored UserOps use the SDK [`createAAClient`](https://andrewkimjoseph.gitbook.io/celina-sdk/guides/account-abstraction) in your app — Celina MCP does not host Pimlico/gas sponsorship keys.
 
@@ -498,8 +498,8 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 
 ## Roadmap
 
-- [x] Mento FX routing (`get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx`)
-- [x] Uniswap v4 swaps (`get_uniswap_quote`, `estimate_uniswap_swap`, `execute_uniswap_swap`)
+- [x] Mento FX routing (`get_mento_swap_pairs`, `get_mento_fx_quote`, `estimate_mento_fx`, `execute_mento_fx`)
+- [x] Uniswap v4 swaps (`get_uniswap_swap_pairs`, `get_uniswap_quote`, `estimate_uniswap_swap`, `execute_uniswap_swap`)
 - [x] Aave tools (`get_aave_balances`, `supply_aave`, `withdraw_aave`) — USDT, WETH, USDm, USDC, CELO, EURm
 - [x] Self proof verification (`verify_self_agent`, `verify_self_request`, `ai.self.xyz`)
 - [x] Self Agent ID check (`lookup_self_agent`, registration & lifecycle tools)
