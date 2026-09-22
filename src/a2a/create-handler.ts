@@ -13,7 +13,7 @@ import { CELINA_MCP_VERSION as mcpVersion } from "../server/version.js";
 import { CelinaA2AExecutor } from "./executor.js";
 
 export interface CreateA2ARequestHandlerOptions {
-  /** Public MCP host base URL, e.g. https://mcp.usecelina.xyz */
+  /** Public remote MCP base URL, e.g. https://mcp.usecelina.xyz */
   baseUrl?: string;
   /** Version string on the agent card (defaults to celina-mcp package version) */
   cardVersion?: string;
