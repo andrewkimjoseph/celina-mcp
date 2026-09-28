@@ -19,7 +19,6 @@ describe("createServer", () => {
         serverKeyToolsEnabled: false,
         selfSessionToolsEnabled: false,
         estimateToolsEnabled: false,
-        analyticsEnabled: false,
       }),
     ).not.toThrow();
   });

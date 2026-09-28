@@ -15,8 +15,6 @@ export type CreateServerOptions = {
   selfSessionToolsEnabled?: boolean;
   /** Omit estimate_* gas simulation tools. Default true. */
   estimateToolsEnabled?: boolean;
-  /** Disable Amplitude read telemetry. Default on. */
-  analyticsEnabled?: boolean;
   /** Override Amplitude device_id. Default: per-install id from ~/.config/celina/install-id. */
   analyticsDeviceId?: string;
 };

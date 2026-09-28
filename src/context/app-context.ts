@@ -99,7 +99,7 @@ export function createAppContext(
   clientFactory: CeloClientFactory,
   config: AppConfig,
   walletAddress?: `0x${string}`,
-  options?: Pick<CreateServerOptions, "analyticsEnabled" | "analyticsDeviceId">,
+  options?: Pick<CreateServerOptions, "analyticsDeviceId">,
 ): AppContext {
   const sdk = createCelinaClient({
     rpcUrl: config.rpcUrl,
@@ -109,7 +109,6 @@ export function createAppContext(
       typeof process !== "undefined"
         ? process.env.SELF_AGENT_API_BASE
         : undefined,
-    analyticsEnabled: options?.analyticsEnabled,
     analyticsDeviceId: options?.analyticsDeviceId ?? getMcpAnalyticsDeviceId(),
     analyticsWalletAddress: walletAddress,
   });
