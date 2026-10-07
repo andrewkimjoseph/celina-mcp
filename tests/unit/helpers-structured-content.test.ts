@@ -28,12 +28,12 @@ describe("formatToolError", () => {
 
   it("appends confirmed hashes for a partial prepared flow", () => {
     const error = new PreparedFlowExecutionError(
-      'Simulation failed for "Swap 1.27 CELO → USDT via Uniswap v4": execution reverted',
+      'Simulation failed for "Swap 1.27 CELO → USDT via Uniswap v3": execution reverted',
       ["0xabc"],
       2,
     );
     expect(formatToolError(error)).toBe(
-      'Simulation failed for "Swap 1.27 CELO → USDT via Uniswap v4": execution reverted (1 of 2 steps already completed on-chain: 0xabc)',
+      'Simulation failed for "Swap 1.27 CELO → USDT via Uniswap v3": execution reverted (1 of 2 steps already completed on-chain: 0xabc)',
     );
   });
 
