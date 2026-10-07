@@ -4,6 +4,7 @@ import type { CeloClientFactory } from "../clients/celo-client.js";
 import { executePreparedFlow, requireWalletClients } from "./execute-prepared-flow.js";
 
 type CelinaClient = ReturnType<typeof createCelinaClient>;
+type UniswapQuote = Awaited<ReturnType<CelinaClient["uniswap"]["getSwapQuote"]>>;
 
 export class UniswapService {
   constructor(
@@ -36,24 +37,17 @@ export class UniswapService {
     tokenOut: string,
     amount: string,
     params?: UniswapSwapParams,
-  ): Promise<{
-    from: `0x${string}`;
-    recipient: `0x${string}`;
-    stepHashes: `0x${string}`[];
-    hash: `0x${string}`;
-    status: "success" | "reverted";
-    slippageTolerance: number;
-    deadlineMinutes: number;
-    protocol: "uniswap_v4";
-    network: "mainnet";
-    tokenIn: string;
-    tokenOut: string;
-    amountIn: string;
-    expectedOut: string;
-    routeHops: number;
-    indexSource?: string;
-    route: { pools: unknown[] };
-  }> {
+  ): Promise<
+    UniswapQuote & {
+      from: `0x${string}`;
+      recipient: `0x${string}`;
+      stepHashes: `0x${string}`[];
+      hash: `0x${string}`;
+      status: "success" | "reverted";
+      slippageTolerance: number;
+      deadlineMinutes: number;
+    }
+  > {
     const clients = requireWalletClients(this.clientFactory.getClients());
     const { accountAddress: from } = clients;
 
