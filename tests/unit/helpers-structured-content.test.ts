@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PreparedFlowExecutionError } from "@andrewkimjoseph/celina-sdk/simulation";
+import { PreparedFlowExecutionError } from "@cnvlabskoxyz/celina-sdk/simulation";
 import { formatToolError, ok } from "../../src/tools/helpers.js";
 
 describe("ok() structuredContent", () => {

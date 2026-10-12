@@ -36,6 +36,6 @@ describe("install-device-id", () => {
     vi.resetModules();
     const mod = await import("../../src/analytics/install-device-id.js");
     const deviceId = mod.getMcpAnalyticsDeviceId();
-    expect(deviceId).toMatch(/^andrewkimjoseph_celina_mcp_[a-f0-9]{8}$/);
+    expect(deviceId).toMatch(/^cnvlabskoxyz_celina_mcp_[a-f0-9]{8}$/);
   });
 });

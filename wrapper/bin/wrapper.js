@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-import "@andrewkimjoseph/celina-mcp";
+import "@cnvlabskoxyz/celina-mcp";

@@ -4,7 +4,7 @@ import {
   InMemoryTaskStore,
   type A2ARequestHandler,
 } from "@a2a-js/sdk/server";
-import { buildCelinaAgentCard } from "@andrewkimjoseph/celina-sdk/a2a";
+import { buildCelinaAgentCard } from "@cnvlabskoxyz/celina-sdk/a2a";
 import { CeloClientFactory } from "../clients/celo-client.js";
 import { loadConfig } from "../config/env.js";
 import { createAppContext } from "../context/app-context.js";

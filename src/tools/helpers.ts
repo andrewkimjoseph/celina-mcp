@@ -3,8 +3,8 @@ import {
   formatSelfSessionLinksDisplay,
   resolveSelfSessionLinks,
   type SelfSessionLinks,
-} from "@andrewkimjoseph/celina-sdk";
-import { isPreparedFlowExecutionError } from "@andrewkimjoseph/celina-sdk/simulation";
+} from "@cnvlabskoxyz/celina-sdk";
+import { isPreparedFlowExecutionError } from "@cnvlabskoxyz/celina-sdk/simulation";
 
 export function ok(data: unknown): CallToolResult {
   const text = JSON.stringify(data, null, 2);

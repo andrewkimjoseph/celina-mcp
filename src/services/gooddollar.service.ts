@@ -2,7 +2,7 @@ import {
   GOODDOLLAR_UBI_SCHEME_ADDRESS,
   type createCelinaClient,
   type GoodDollarReserveSwapParams,
-} from "@andrewkimjoseph/celina-sdk";
+} from "@cnvlabskoxyz/celina-sdk";
 import { decodeEventLog, formatUnits } from "viem";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 import { executePreparedFlow, requireWalletClients } from "./execute-prepared-flow.js";

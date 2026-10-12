@@ -4,7 +4,7 @@ import {
   filterToolDefinitions,
   type ToolDefinition,
   type ToolRuntime,
-} from "@andrewkimjoseph/celina-sdk/tools";
+} from "@cnvlabskoxyz/celina-sdk/tools";
 import type { AppContext } from "../context/app-context.js";
 import { err, formatToolError, ok, okSelfSession } from "./helpers.js";
 import { createMcpRuntime } from "./create-runtime.js";

@@ -1,4 +1,4 @@
-import type { ToolRuntime, ToolRuntimeExecutors } from "@andrewkimjoseph/celina-sdk/tools";
+import type { ToolRuntime, ToolRuntimeExecutors } from "@cnvlabskoxyz/celina-sdk/tools";
 import type { AppContext } from "../context/app-context.js";
 import { resolveWalletAddress, assertSelfAgentKey } from "./resolve-wallet.js";
 

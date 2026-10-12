@@ -9,4 +9,4 @@ export {
   paginationFields as paginationSchema,
   tokenIdSchema,
   tokenSymbolSchema,
-} from "@andrewkimjoseph/celina-sdk/tools";
+} from "@cnvlabskoxyz/celina-sdk/tools";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getMcpToolNames } from "@andrewkimjoseph/celina-sdk/tools";
-import { MCP_TOOL_NAMES } from "@andrewkimjoseph/celina-sdk/testing";
+import { getMcpToolNames } from "@cnvlabskoxyz/celina-sdk/tools";
+import { MCP_TOOL_NAMES } from "@cnvlabskoxyz/celina-sdk/testing";
 import { getMcpClient } from "./helpers/run-mcp-operation.js";
 
 describe("registry parity", () => {

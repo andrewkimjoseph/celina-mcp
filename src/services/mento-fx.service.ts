@@ -1,4 +1,4 @@
-import type { createCelinaClient, MentoFxParams } from "@andrewkimjoseph/celina-sdk";
+import type { createCelinaClient, MentoFxParams } from "@cnvlabskoxyz/celina-sdk";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 import { executePreparedFlow, requireWalletClients } from "./execute-prepared-flow.js";
 

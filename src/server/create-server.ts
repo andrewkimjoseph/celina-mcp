@@ -1,6 +1,6 @@
 /** MCP server factory: load config → create clients → register all tool modules. */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { drainCelinaAnalytics } from "@andrewkimjoseph/celina-sdk";
+import { drainCelinaAnalytics } from "@cnvlabskoxyz/celina-sdk";
 import { loadConfig } from "../config/env.js";
 import { CeloClientFactory } from "../clients/celo-client.js";
 import { createAppContext } from "../context/app-context.js";

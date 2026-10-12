@@ -1,17 +1,17 @@
-# @andrewkimjoseph/celina (deprecated)
+# @cnvlabskoxyz/celina (deprecated)
 
-This package is deprecated. Use [`@andrewkimjoseph/celina-mcp`](https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp) instead.
+This package is deprecated. Use [`@cnvlabskoxyz/celina-mcp`](https://www.npmjs.com/package/@cnvlabskoxyz/celina-mcp) instead.
 
 ## Migration
 
-If you still use `@andrewkimjoseph/celina`, update your MCP config `args` to `@andrewkimjoseph/celina-mcp` and rename the server key to `celina-mcp`.
+If you still use `@cnvlabskoxyz/celina`, update your MCP config `args` to `@cnvlabskoxyz/celina-mcp` and rename the server key to `celina-mcp`.
 
 ```json
 {
   "mcpServers": {
     "celina-mcp": {
       "command": "npx",
-      "args": ["-y", "@andrewkimjoseph/celina-mcp"]
+      "args": ["-y", "@cnvlabskoxyz/celina-mcp"]
     }
   }
 }

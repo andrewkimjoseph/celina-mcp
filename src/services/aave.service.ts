@@ -2,7 +2,7 @@ import {
   AAVE_POOL,
   resolveAaveAsset,
   type createCelinaClient,
-} from "@andrewkimjoseph/celina-sdk";
+} from "@cnvlabskoxyz/celina-sdk";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 import { executePreparedFlow, requireWalletClients } from "./execute-prepared-flow.js";
 

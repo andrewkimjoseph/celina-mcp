@@ -1,4 +1,4 @@
-import type { createCelinaClient } from "@andrewkimjoseph/celina-sdk";
+import type { createCelinaClient } from "@cnvlabskoxyz/celina-sdk";
 import type { Abi } from "viem";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 import { executePreparedFlow, requireWalletClients } from "./execute-prepared-flow.js";

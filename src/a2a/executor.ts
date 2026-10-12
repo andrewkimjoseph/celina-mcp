@@ -9,8 +9,8 @@ import {
   getHostedMcpToolNames,
   type ToolDefinition,
   type ToolRuntime,
-} from "@andrewkimjoseph/celina-sdk/tools";
-import { CELINA_TOOL_MIME } from "@andrewkimjoseph/celina-sdk/a2a";
+} from "@cnvlabskoxyz/celina-sdk/tools";
+import { CELINA_TOOL_MIME } from "@cnvlabskoxyz/celina-sdk/a2a";
 
 export interface CelinaToolInvocation {
   tool: string;

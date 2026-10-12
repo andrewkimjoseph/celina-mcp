@@ -1,4 +1,4 @@
-import { tryParsePrivateKeyEnv } from "@andrewkimjoseph/celina-sdk";
+import { tryParsePrivateKeyEnv } from "@cnvlabskoxyz/celina-sdk";
 
 export interface KeyConfigErrors {
   celo?: string;

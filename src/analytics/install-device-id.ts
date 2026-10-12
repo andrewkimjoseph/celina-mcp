@@ -3,8 +3,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-/** Sanitized npm name for @andrewkimjoseph/celina-mcp (matches celina-sdk telemetry). */
-export const MCP_PACKAGE_DEVICE_ID = "andrewkimjoseph_celina_mcp";
+/** Sanitized npm name for @cnvlabskoxyz/celina-mcp (matches celina-sdk telemetry). */
+export const MCP_PACKAGE_DEVICE_ID = "cnvlabskoxyz_celina_mcp";
 
 function installIdFilePath(): string {
   return join(homedir(), ".config", "celina", "install-id");

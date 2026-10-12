@@ -8,7 +8,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { AppConfig } from "../config/env.js";
-import { CHAIN, DEFAULT_RPC_URL } from "@andrewkimjoseph/celina-sdk";
+import { CHAIN, DEFAULT_RPC_URL } from "@cnvlabskoxyz/celina-sdk";
 
 const chain = CHAIN as Chain;
 

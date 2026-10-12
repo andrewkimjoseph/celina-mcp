@@ -5,13 +5,13 @@
 <h1 align="center">Celina — Celo MCP Server</h1>
 
 <p align="center">
-  <strong>Celina</strong> is a third-party, open-source stack that gives an LLM read, prepare, and execute access to Celo mainnet through an SDK, an MCP server, and a REST API. This package is the <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server — it registers the shared <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk"><code>@andrewkimjoseph/celina-sdk/tools</code></a> catalog — the same Zod schemas and handlers that power browser wallet apps — so MCP and agent hosts stay in sync with the SDK and REST API.
+  <strong>Celina</strong> is a third-party, open-source stack that gives an LLM read, prepare, and execute access to Celo mainnet through an SDK, an MCP server, and a REST API. This package is the <a href="https://modelcontextprotocol.io">Model Context Protocol</a> server — it registers the shared <a href="https://www.npmjs.com/package/@cnvlabskoxyz/celina-sdk"><code>@cnvlabskoxyz/celina-sdk/tools</code></a> catalog — the same Zod schemas and handlers that power browser wallet apps — so MCP and agent hosts stay in sync with the SDK and REST API.
 </p>
 
 <p align="center">
   <a href="https://celina.andrewkimjoseph.com">Website</a>
   ·
-  <a href="https://www.npmjs.com/package/@andrewkimjoseph/celina-mcp">npm</a>
+  <a href="https://www.npmjs.com/package/@cnvlabskoxyz/celina-mcp">npm</a>
   ·
   <a href="https://mcp.usecelina.xyz/mcp">Hosted (reads + prepare)</a>
   ·
@@ -21,20 +21,20 @@
 ## Install
 
 ```bash
-npm i -g @andrewkimjoseph/celina-mcp@latest
+npm i -g @cnvlabskoxyz/celina-mcp@latest
 ```
 
 Full setup guide (Windows paths, troubleshooting): **[usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local)**.
 
 ## Migration
 
-If you still use `@andrewkimjoseph/celina`, update your MCP config `args` to `@andrewkimjoseph/celina-mcp` and rename the server key to `celina-mcp`. The old package name remains published as a wrapper through one release cycle.
+If you still use `@cnvlabskoxyz/celina`, update your MCP config `args` to `@cnvlabskoxyz/celina-mcp` and rename the server key to `celina-mcp`. The old package name remains published as a wrapper through one release cycle.
 
 ## Quick start
 
 **Recommended:** install globally and connect over stdio — full tool catalog with execute/write when you set `CELO_PRIVATE_KEY`, fast startup, and keys stay on your machine.
 
-Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) runs the **`celina-mcp`** binary over stdio. Tools register from `@andrewkimjoseph/celina-sdk/tools` via `registerSdkTools`. See [Local stdio (recommended)](#local-stdio-recommended) or the [website install guide](https://www.usecelina.xyz/mcp/local).
+Your MCP client (Cursor, Claude Desktop, LM Studio, etc.) runs the **`celina-mcp`** binary over stdio. Tools register from `@cnvlabskoxyz/celina-sdk/tools` via `registerSdkTools`. See [Local stdio (recommended)](#local-stdio-recommended) or the [website install guide](https://www.usecelina.xyz/mcp/local).
 
 For chain reads without a local install, use the hosted Streamable HTTP endpoint at [https://mcp.usecelina.xyz/mcp](https://mcp.usecelina.xyz/mcp) — see [Hosted (reads + prepare)](#hosted-reads--prepare).
 
@@ -50,7 +50,7 @@ Install globally, then add Celina to your MCP config. Your client runs the **`ce
 
 GUI clients (Cursor, Claude Desktop) often spawn MCP servers with a minimal PATH that does not include nvm, fnm, Homebrew, or npm’s global bin. Bare `"command": "celina-mcp"` then fails with `spawn celina-mcp ENOENT` and the client reconnects in a loop. Paste the absolute path from the commands below into `"command"` before you first connect.
 
-1. Run `npm i -g @andrewkimjoseph/celina-mcp@latest`
+1. Run `npm i -g @cnvlabskoxyz/celina-mcp@latest`
 2. **Find the binary path** (copy the output into `"command"` in step 3):
    - **macOS / Linux:** `which celina-mcp`
    - **Windows (cmd):** `where celina-mcp`
@@ -94,7 +94,7 @@ GUI clients (Cursor, Claude Desktop) often spawn MCP servers with a minimal PATH
 }
 ```
 
-Replace `"command"` with your `which` / `where` / `Get-Command` output. `"command": "celina-mcp"` only works if the GUI app inherits npm’s global bin — often false on macOS and Windows. If path lookup is empty, install globally first, or as a last resort use `"command": "node"` and `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` (run `npm root -g` to find the path; use Windows path separators in the arg on Windows).
+Replace `"command"` with your `which` / `where` / `Get-Command` output. `"command": "celina-mcp"` only works if the GUI app inherits npm’s global bin — often false on macOS and Windows. If path lookup is empty, install globally first, or as a last resort use `"command": "node"` and `"args": ["<npm root -g>/@cnvlabskoxyz/celina-mcp/build/index.js"]` (run `npm root -g` to find the path; use Windows path separators in the arg on Windows).
 
 Keep `CELO_PRIVATE_KEY` and `SELF_AGENT_PRIVATE_KEY` out of source control — they stay on your machine. Omit both for read-only chain queries.
 
@@ -266,7 +266,7 @@ Wallet-scoped tools with optional address: `get_account`, token balance tools, s
 
 On **hosted** MCP (no key), pass explicit addresses. `get_wallet_address` is omitted from the hosted tool list.
 
-Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) filter the same tool catalog with `surface: "browser"` and pass the user’s connected wallet on each call — see [tool catalog guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md) and [MCP session wallet guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/mcp-session-wallet.md).
+Browser apps using [`@cnvlabskoxyz/celina-sdk`](https://www.npmjs.com/package/@cnvlabskoxyz/celina-sdk) filter the same tool catalog with `surface: "browser"` and pass the user’s connected wallet on each call — see [tool catalog guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md) and [MCP session wallet guide](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/mcp-session-wallet.md).
 
 ## Environment variables
 
@@ -278,13 +278,13 @@ Browser apps using [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package
 | `CELO_RPC_URL_MAINNET` | Forno public RPC | Override mainnet RPC |
 | `ETH_RPC_URL_MAINNET` | — | Ethereum RPC for ENS resolution |
 
-**Account Abstraction / gas sponsorship:** Celina MCP does **not** take a Pimlico (or other) sponsorship API key. Sponsored UserOps use `@andrewkimjoseph/celina-sdk` [`createAAClient`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/account-abstraction.md) in your app with **your** `gasSponsorship` provider credentials. Stdio `execute_*` remains EOA-only via `CELO_PRIVATE_KEY`.
+**Account Abstraction / gas sponsorship:** Celina MCP does **not** take a Pimlico (or other) sponsorship API key. Sponsored UserOps use `@cnvlabskoxyz/celina-sdk` [`createAAClient`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/account-abstraction.md) in your app with **your** `gasSponsorship` provider credentials. Stdio `execute_*` remains EOA-only via `CELO_PRIVATE_KEY`.
 
 Copy `.env.example` to `.env` for local development.
 
 ## Known tokens
 
-All supported tokens live in the [`celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) token registry:
+All supported tokens live in the [`celina-sdk`](https://www.npmjs.com/package/@cnvlabskoxyz/celina-sdk) token registry:
 
 | Category | Symbols |
 |----------|---------|
@@ -300,7 +300,7 @@ Token symbols are resolved case-insensitively. Mento legacy tickers (`cUSD`, `cE
 
 ## Tools
 
-Full schemas and handlers live in [`@andrewkimjoseph/celina-sdk/tools`](../celina-sdk/docs/guides/tool-catalog.md). MCP registers them via `registerSdkTools` — no per-tool files in this repo.
+Full schemas and handlers live in [`@cnvlabskoxyz/celina-sdk/tools`](../celina-sdk/docs/guides/tool-catalog.md). MCP registers them via `registerSdkTools` — no per-tool files in this repo.
 
 ### Core
 
@@ -429,7 +429,7 @@ authenticated_self_fetch
 
 ## Adding a new tool
 
-1. Add a `ToolDefinition` in **celina-sdk** `src/tools/domains/` and export it from `ALL_TOOL_DEFINITIONS` (see [`@andrewkimjoseph/celina-sdk/tools`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md)).
+1. Add a `ToolDefinition` in **celina-sdk** `src/tools/domains/` and export it from `ALL_TOOL_DEFINITIONS` (see [`@cnvlabskoxyz/celina-sdk/tools`](https://github.com/andrewkimjoseph/celina-sdk/blob/main/docs/guides/tool-catalog.md)).
 2. MCP picks it up automatically via `registerSdkTools` in `src/tools/sdk-register.ts` — no per-tool MCP file required.
 3. Add domain logic in celina-sdk services if the handler needs new client methods.
 4. Rebuild both packages: `npm run build` in celina-sdk, then celina-mcp.
@@ -440,7 +440,7 @@ Set `surfaces` on the definition (`"mcp"`, `"browser"`, or both) and use `filter
 
 ### Architecture split
 
-Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) simulates each step with [`simulatePreparedStep`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk/simulation) before signing:
+Chain logic comes from [`@cnvlabskoxyz/celina-sdk`](https://www.npmjs.com/package/@cnvlabskoxyz/celina-sdk) via [`src/context/app-context.ts`](src/context/app-context.ts). Write tools call SDK `prepare*` methods, then [`executePreparedFlow`](src/services/execute-prepared-flow.ts) simulates each step with [`simulatePreparedStep`](https://www.npmjs.com/package/@cnvlabskoxyz/celina-sdk/simulation) before signing:
 
 | Layer | Source | Examples |
 |-------|--------|----------|
@@ -450,11 +450,11 @@ Chain logic comes from [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/pac
 | Account / GoodDollar identity | `accountWrite`, `gooddollarIdentityWrite`, `gooddollarFaceVerification` | `execute_register_celo_account`, connect/disconnect, face verification link |
 | Self Agent ID | celina-sdk `client.self` | registration, proof refresh, authenticated fetch (`SELF_AGENT_PRIVATE_KEY`) |
 
-Before each `wallet.sendTransaction`, `executePreparedFlow` calls `simulatePreparedStep` from `@andrewkimjoseph/celina-sdk/simulation`. Reverts are caught **before gas is spent**; a post-mine `receipt.status` check remains as a safety net. No `feeCurrency` — the server wallet pays CELO gas.
+Before each `wallet.sendTransaction`, `executePreparedFlow` calls `simulatePreparedStep` from `@cnvlabskoxyz/celina-sdk/simulation`. Reverts are caught **before gas is spent**; a post-mine `receipt.status` check remains as a safety net. No `feeCurrency` — the server wallet pays CELO gas.
 
 Mento FX routing uses `@mento-protocol/mento-sdk` transitively through celina-sdk — MCP does not import it directly.
 
-Self Agent ID is implemented in [`@andrewkimjoseph/celina-sdk`](https://www.npmjs.com/package/@andrewkimjoseph/celina-sdk) (`client.self`). For browser-first Self UIs, also see [`@selfxyz/agent-sdk`](https://www.npmjs.com/package/@selfxyz/agent-sdk).
+Self Agent ID is implemented in [`@cnvlabskoxyz/celina-sdk`](https://www.npmjs.com/package/@cnvlabskoxyz/celina-sdk) (`client.self`). For browser-first Self UIs, also see [`@selfxyz/agent-sdk`](https://www.npmjs.com/package/@selfxyz/agent-sdk).
 
 ### Directory map
 
@@ -488,10 +488,10 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 
 | Symptom | Likely cause | What to do |
 |---------|--------------|------------|
-| MCP disconnects after ~60s; logs show `notifications/cancelled` | Cold `npx -y` or slow first import exceeds Claude Desktop handshake timeout | `npm i -g @andrewkimjoseph/celina-mcp@latest`; set `"command"` to absolute path from `which` / `where` / `Get-Command`; Node 20/22 LTS — see [usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local) |
-| Cursor reconnect loop; logs show `spawn celina-mcp ENOENT` | GUI PATH missing npm’s global bin (nvm/fnm/Homebrew on macOS; npm global prefix on Windows), or binary not installed | Run `which` / `where` / `Get-Command` (see [Local stdio](#local-stdio-recommended)) and paste that absolute path into `"command"`. If lookup is empty, install globally first, or as a last resort use `"command": "node"` and `"args": ["<npm root -g>/@andrewkimjoseph/celina-mcp/build/index.js"]` |
-| `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level | Run `npm i -g ox`, or upgrade to `@andrewkimjoseph/celina-mcp@0.18.7`+ with `@andrewkimjoseph/celina-sdk@0.25.0`+ |
-| `ERESOLVE overriding peer dependency` for `permissionless` / `ox` on install | `permissionless@0.2.57` optional peer wants `ox@^0.8.0`; Celina pins `ox@^0.10.0` | Safe to ignore on 0.18.11+; or `npm i -g @andrewkimjoseph/celina-mcp --legacy-peer-deps`; if you have `~/package.json`, add `legacy-peer-deps=true` to `~/.npmrc` |
+| MCP disconnects after ~60s; logs show `notifications/cancelled` | Cold `npx -y` or slow first import exceeds Claude Desktop handshake timeout | `npm i -g @cnvlabskoxyz/celina-mcp@latest`; set `"command"` to absolute path from `which` / `where` / `Get-Command`; Node 20/22 LTS — see [usecelina.xyz/mcp/local](https://www.usecelina.xyz/mcp/local) |
+| Cursor reconnect loop; logs show `spawn celina-mcp ENOENT` | GUI PATH missing npm’s global bin (nvm/fnm/Homebrew on macOS; npm global prefix on Windows), or binary not installed | Run `which` / `where` / `Get-Command` (see [Local stdio](#local-stdio-recommended)) and paste that absolute path into `"command"`. If lookup is empty, install globally first, or as a last resort use `"command": "node"` and `"args": ["<npm root -g>/@cnvlabskoxyz/celina-mcp/build/index.js"]` |
+| `Cannot find package 'ox'` from `permissionless` on MCP start | npm hoisted `permissionless` without `ox` at the same level | Run `npm i -g ox`, or upgrade to `@cnvlabskoxyz/celina-mcp@0.18.7`+ with `@cnvlabskoxyz/celina-sdk@0.25.0`+ |
+| `ERESOLVE overriding peer dependency` for `permissionless` / `ox` on install | `permissionless@0.2.57` optional peer wants `ox@^0.8.0`; Celina pins `ox@^0.10.0` | Safe to ignore on 0.18.11+; or `npm i -g @cnvlabskoxyz/celina-mcp --legacy-peer-deps`; if you have `~/package.json`, add `legacy-peer-deps=true` to `~/.npmrc` |
 | MCP server never connects / Shared MCP process crash on start | Stale npx cache, wrong command, or GUI PATH miss | Set `"command"` to absolute path from `which` / `where` / `Get-Command`; fully quit and restart your MCP client; for dev, point `args` at your local `build/index.js` |
 | `EPIPE: broken pipe` in logs | Client closed stdio before late `initialize` response | Fix slow startup (global install + `celina-mcp` command) |
 | Write tools fail immediately | Invalid or placeholder `CELO_PRIVATE_KEY` / `SELF_AGENT_PRIVATE_KEY` | Use 64 hex chars (with or without `0x`); remove placeholder values like `0x...`. Invalid keys no longer block startup — fix the env value and restart for writes |

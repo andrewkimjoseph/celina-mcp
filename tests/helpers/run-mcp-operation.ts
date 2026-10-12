@@ -1,13 +1,13 @@
-import { createCelinaClient } from "@andrewkimjoseph/celina-sdk";
+import { createCelinaClient } from "@cnvlabskoxyz/celina-sdk";
 import type {
   MainnetFixtures,
   OperationSpec,
-} from "@andrewkimjoseph/celina-sdk/testing";
+} from "@cnvlabskoxyz/celina-sdk/testing";
 import {
   getMainnetFixtures,
   getOperationSkipReason,
   loadTestConfig,
-} from "@andrewkimjoseph/celina-sdk/testing";
+} from "@cnvlabskoxyz/celina-sdk/testing";
 import {
   McpStdioClient,
   parseToolResultBody,

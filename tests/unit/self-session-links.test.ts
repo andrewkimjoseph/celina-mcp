@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatSelfSessionLinksDisplay,
   resolveSelfSessionLinks,
-} from "@andrewkimjoseph/celina-sdk";
+} from "@cnvlabskoxyz/celina-sdk";
 import { okSelfSession } from "../../src/tools/helpers.js";
 
 describe("resolveSelfSessionLinks", () => {

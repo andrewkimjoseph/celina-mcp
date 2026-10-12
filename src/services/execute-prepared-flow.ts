@@ -1,9 +1,9 @@
-import { reportCelinaOnchainTxn } from "@andrewkimjoseph/celina-sdk";
+import { reportCelinaOnchainTxn } from "@cnvlabskoxyz/celina-sdk";
 import {
   PreparedFlowExecutionError,
   simulatePreparedStepWithRetry,
   type PreparedTx,
-} from "@andrewkimjoseph/celina-sdk/simulation";
+} from "@cnvlabskoxyz/celina-sdk/simulation";
 import { type Hex } from "viem";
 import type { CeloClients, SignerKind } from "../clients/celo-client.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";

@@ -5,7 +5,7 @@ import { registerSdkTools, type RegisterToolsOptions } from "./sdk-register.js";
 
 export type { RegisterToolsOptions };
 
-/** Register every Celina tool on the MCP server from @andrewkimjoseph/celina-sdk/tools. */
+/** Register every Celina tool on the MCP server from @cnvlabskoxyz/celina-sdk/tools. */
 export function registerAllTools(
   server: McpServer,
   ctx: AppContext,
