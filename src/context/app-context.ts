@@ -5,7 +5,7 @@
  * Writes call celina-sdk prepare* methods, then sign steps with CELO_PRIVATE_KEY
  * via executePreparedFlow — unlike celina-agent where the user signs in-browser.
  */
-import { createCelinaClient } from "@andrewkimjoseph/celina-sdk";
+import { createCelinaClient } from "@cnvlabskoxyz/celina-sdk";
 import { getMcpAnalyticsDeviceId } from "../analytics/install-device-id.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 import { TransactionService } from "../services/transaction.service.js";
@@ -38,7 +38,7 @@ function assertSdkServices(
   for (const key of required) {
     if (!sdk[key]) {
       throw new Error(
-        `Missing celina-sdk service "${key}". Install @andrewkimjoseph/celina-sdk >= 0.2.0, ` +
+        `Missing celina-sdk service "${key}". Install @cnvlabskoxyz/celina-sdk >= 0.2.0, ` +
           "run npm install in celina-mcp, rebuild, and restart the MCP server.",
       );
     }

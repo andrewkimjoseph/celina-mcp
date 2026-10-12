@@ -1,4 +1,4 @@
-import { type createCelinaClient } from "@andrewkimjoseph/celina-sdk";
+import { type createCelinaClient } from "@cnvlabskoxyz/celina-sdk";
 import type { CeloClientFactory, SignerKind } from "../clients/celo-client.js";
 import { executePreparedFlow, requireWalletClients } from "./execute-prepared-flow.js";
 

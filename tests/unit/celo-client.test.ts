@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePrivateKeyEnv } from "@andrewkimjoseph/celina-sdk";
+import { parsePrivateKeyEnv } from "@cnvlabskoxyz/celina-sdk";
 import { CeloClientFactory } from "../../src/clients/celo-client.js";
 import type { AppConfig } from "../../src/config/env.js";
 

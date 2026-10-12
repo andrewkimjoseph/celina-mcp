@@ -1,7 +1,7 @@
 import {
   assertHumanness,
   type createCelinaClient,
-} from "@andrewkimjoseph/celina-sdk";
+} from "@cnvlabskoxyz/celina-sdk";
 import type { CeloClientFactory, SignerKind } from "../clients/celo-client.js";
 import { executePreparedFlow } from "./execute-prepared-flow.js";
 
@@ -15,7 +15,7 @@ export class StakingWriteService {
 
   private async executeHumannessGated(
     signer: SignerKind | undefined,
-    prepare: (from: `0x${string}`) => Promise<{ steps: import("@andrewkimjoseph/celina-sdk").PreparedTx[] }>,
+    prepare: (from: `0x${string}`) => Promise<{ steps: import("@cnvlabskoxyz/celina-sdk").PreparedTx[] }>,
   ) {
     const clients = this.clientFactory.getClients(signer);
     const from = clients.accountAddress;

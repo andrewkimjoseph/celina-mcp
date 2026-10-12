@@ -1,5 +1,5 @@
-import type { FaceVerificationLinkResult } from "@andrewkimjoseph/celina-sdk";
-import type { createCelinaClient } from "@andrewkimjoseph/celina-sdk";
+import type { FaceVerificationLinkResult } from "@cnvlabskoxyz/celina-sdk";
+import type { createCelinaClient } from "@cnvlabskoxyz/celina-sdk";
 import { requireWalletClients } from "./execute-prepared-flow.js";
 import type { CeloClientFactory } from "../clients/celo-client.js";
 

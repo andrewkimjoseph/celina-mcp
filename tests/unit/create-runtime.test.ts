@@ -1,4 +1,4 @@
-import { getToolDefinition } from "@andrewkimjoseph/celina-sdk/tools";
+import { getToolDefinition } from "@cnvlabskoxyz/celina-sdk/tools";
 import { describe, expect, it, vi } from "vitest";
 import type { AppContext } from "../../src/context/app-context.js";
 import { createMcpRuntime } from "../../src/tools/create-runtime.js";

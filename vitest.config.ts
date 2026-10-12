@@ -12,7 +12,7 @@ export default defineConfig({
     exclude: ["tests/unit/**"],
     server: {
       deps: {
-        inline: ["@andrewkimjoseph/celina-sdk"],
+        inline: ["@cnvlabskoxyz/celina-sdk"],
       },
     },
   },

@@ -1,7 +1,7 @@
 {
-  "name": "@andrewkimjoseph/celina",
-  "version": "0.28.1",
-  "description": "Deprecated — use @andrewkimjoseph/celina-mcp",
+  "name": "@cnvlabskoxyz/celina",
+  "version": "1.0.0",
+  "description": "Deprecated — use @cnvlabskoxyz/celina-mcp",
   "type": "module",
   "bin": {
     "celina": "bin/wrapper.js",
@@ -20,6 +20,6 @@
     "url": "https://github.com/andrewkimjoseph/celina-mcp/issues"
   },
   "dependencies": {
-    "@andrewkimjoseph/celina-mcp": "0.28.1"
+    "@cnvlabskoxyz/celina-mcp": "1.0.0"
   }
 }
