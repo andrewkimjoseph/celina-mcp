@@ -510,4 +510,4 @@ Copy `.env.example` to `.env` for `CELO_PRIVATE_KEY`, `SELF_AGENT_PRIVATE_KEY`, 
 
 ## License
 
-MIT
+MIT — Copyright (c) 2026 CNV Labs KO XYZ.
