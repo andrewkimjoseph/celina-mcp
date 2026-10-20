@@ -1,6 +1,6 @@
 {
   "name": "@cnvlabskoxyz/celina",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Deprecated — use @cnvlabskoxyz/celina-mcp",
   "type": "module",
   "bin": {
@@ -25,6 +25,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@cnvlabskoxyz/celina-mcp": "1.0.0"
+    "@cnvlabskoxyz/celina-mcp": "1.0.1"
   }
 }

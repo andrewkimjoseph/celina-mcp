@@ -111,6 +111,7 @@ export function createAppContext(
         : undefined,
     analyticsDeviceId: options?.analyticsDeviceId ?? getMcpAnalyticsDeviceId(),
     analyticsWalletAddress: walletAddress,
+    attributionTags: ["celina_mcp"],
   });
 
   assertSdkServices(sdk);
