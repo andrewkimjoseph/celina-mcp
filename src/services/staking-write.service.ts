@@ -60,9 +60,13 @@ export class StakingWriteService {
     );
   }
 
-  undelegatePower(delegatee: `0x${string}`, percent: number, signer?: SignerKind) {
+  undelegatePower(
+    delegatee: `0x${string}`,
+    request: { percent?: number; all?: boolean },
+    signer?: SignerKind,
+  ) {
     return this.executeHumannessGated(signer, (from) =>
-      this.sdk.staking.prepareUndelegatePower(from, delegatee, percent),
+      this.sdk.staking.prepareUndelegatePower(from, delegatee, request),
     );
   }
 }
