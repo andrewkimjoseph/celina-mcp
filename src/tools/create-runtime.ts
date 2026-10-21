@@ -101,8 +101,8 @@ export function createMcpRuntime(ctx: AppContext): ToolRuntime {
         ctx.stakingWrite.unstake(groupAddress, amount, signer),
       delegatePower: (delegatee, percent, signer) =>
         ctx.stakingWrite.delegatePower(delegatee, percent, signer),
-      undelegatePower: (delegatee, percent, signer) =>
-        ctx.stakingWrite.undelegatePower(delegatee, percent, signer),
+      undelegatePower: (delegatee, request, signer) =>
+        ctx.stakingWrite.undelegatePower(delegatee, request, signer),
     },
     accountWrite: {
       registerAccount: (signer) => ctx.accountWrite.registerAccount(signer),
